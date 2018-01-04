@@ -32,7 +32,13 @@ $$\tilde J_{i,j,1} = J_{(i,j),(i+1,j)} \text{ et } \tilde J_{i,j,2} = J_{(i,j),(
 
 \section{Simulation naïve en petite taille}
 
-Pour vérifier que les algorithmes fonctionnent, on les compare à la méthode naïve en petite taille. Pour cela, on numérote les $2^{N^2}$ états (dans l'ordre lexicographique en lisant les matrices colonne par colonne).
+En petite taille, on peut faire une simulation naïve. Pour cela, on numérote les $2^{N^2}$ états (dans l'ordre lexicographique en lisant les matrices colonne par colonne), on calcule exactement la loi et on choisit un numéro en utilisant cette loi et une loi uniforme sur $[0,1]$.
+
+\section{Simulation par Metropolis-Hastings}
+
+Nous avons implémenté l'algorithme de Metropolis-Hastings en utilisant la fonction de rejet de Metropolis-Hastings. Pour le choix du noyau instrumental $Q$, nous avons choisi de changer (multiplier par $-1$) chaque coordonnée avec une probabilité $p$, ce qui permet d'explorer tout l'espace, d'avoir un noyau symétrique irréductible, une chaîne de Metropolis-Hastings apériodique (probabilité strictement positive de rester sur place).
+
+Dans le cas $p=\frac 1 2$, on propose un nouvel état indépendamment de l'état en cours. Dans le cas $0<p<\frac 1 2$, on reste \og plus proche \fg{} de l'état en cours, tout en ayant une chance d'explorer des états éloignés.
 
 \section{Simulation par l'échantilloneur de Gibbs}
 
