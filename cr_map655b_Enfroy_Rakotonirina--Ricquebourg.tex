@@ -1,0 +1,47 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+% \usepackage{fullpage}
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+% \usepackage{mathabx}
+% \usepackage{bbm}
+\usepackage{stmaryrd}
+% \usepackage{enumerate}
+
+\input{preamble_Macro}
+
+\title{Projet de simulations aléatoires : Modèles d'Ising}
+\author{Aurélien Enfroy, Shmuel Rakotonirina{-}-Ricquebourg}
+
+\begin{document}
+\maketitle
+
+\section{Implémentation du modèle d'Ising}
+
+On rappelle la définition du modèle d'Ising sur un réseau carré :
+\begin{definition}
+On fixe $C$ le réseau carré de dimension 2 de taille $N^2$. Le modèle d'Ising est la distribution sur l'espace d'état $\set{\pm 1}^C$ dont la loi est donnée par
+$$\forall x \in \set{\pm 1}^C, \pi(x) = \frac{1}{Z_T} \exp \left( \frac{\somme{u\sim v}{} J_{u,v} x_{u} x_{v} + \somme{u}{} h_{u} x_{u}}{T} \right)$$
+où $T>0$ est appelée la température, $Z_T$ est une constante de normalisation, $J_{u,v}$ est la force d'interaction entre $u$ et $v$ et $h_{u}$ est le champ magnétique extérieur en $u$.
+\end{definition}
+
+Pour l'implémentation, on remarque qu'il n'y a pas besoin du paramètre $T$, qu'on peut compter dans $J$ et $h$. On représente alors ces paramètres en prenant $x \in \mathcal M_{N,N}(\set{\pm 1})$, $h \in \mathcal M_{N,N}(\mathbb R)$ et $J$ comme une matrice à trois entrées $\tilde J \in \mathcal M_{N,N,2}(\mathbb R)$ où
+$$\tilde J_{i,j,1} = J_{(i,j),(i+1,j)} \text{ et } \tilde J_{i,j,2} = J_{(i,j),(i,j+1)}.$$
+
+\section{Simulation naïve en petite taille}
+
+Pour vérifier que les algorithmes fonctionnent, on les compare à la méthode naïve en petite taille. Pour cela, on numérote les $2^{N^2}$ états (dans l'ordre lexicographique en lisant les matrices colonne par colonne).
+
+\section{Simulation par l'échantilloneur de Gibbs}
+
+En reprenant les notations du cours, on a pour $u \in C$ et $x \in \set{\pm 1}^C$
+\begin{align*}
+\pi_u(x_u \mid x^u)
+&= \frac{\pi(x_u,x^u)}{\pi(1,x^u) + \pi(-1,x^u)}\\
+&= \frac{e^{x_u \lambda_u}}{e^{\lambda_u} + e^{-\lambda_u}}
+\end{align*}
+où $\lambda_u \doteq \somme{v \sim u}{} J_{u,v} x_v + h_u$. Donc $\pi_u(\cdot \mid x^u) = \mathcal B(\frac{e^{\lambda_u}}{e^{\lambda_u} + e^{-\lambda_u}}) = B(\frac{1}{1 + e^{-2\lambda_u}})$
+
+\end{document}

@@ -1,0 +1,90 @@
+% notations textuelles condensées
+	\newcommand{\ssi}{si, et seulement si, }
+	\newcommand{\ps}{\ensuremath{\text{ p.s.}}}
+
+
+
+% restriction d'applications
+	\newcommand{\restrictionaux}[2]{{#1\,\smash{\vrule height .8\ht1 depth .85\dp1}}_{\,#2}}
+	\newcommand{\restr}[2]{\ensuremath{\mathchoice
+		{\setbox1\hbox{${\displaystyle #1}_{\scriptstyle #2}$}
+		\restrictionaux{#1}{#2}}
+		{\setbox1\hbox{${\textstyle #1}_{\scriptstyle #2}$}
+		\restrictionaux{#1}{#2}}
+		{\setbox1\hbox{${\scriptstyle #1}_{\scriptscriptstyle #2}$}
+		\restrictionaux{#1}{#2}}
+		{\setbox1\hbox{${\scriptscriptstyle #1}_{\scriptscriptstyle #2}$}
+		\restrictionaux{#1}{#2}}}}
+
+
+
+% notations mathématiques
+	% applications
+		\newcommand{\map}[4]{\ensuremath{\begin{array}{r c l}#1&\to&#2\\#3&\mapsto&#4\end{array}}}
+		\newcommand{\mapp}[6]{\ensuremath{\begin{array}{r c l}#1&\to&#2\\#3&\mapsto&#4\\#5&\mapsto&#6\end{array}}}
+
+	% listes d'éléments
+		\newcommand{\set}[1]{\ensuremath{\left\lbrace #1 \right\rbrace}}
+		\newcommand{\scal}[2]{\ensuremath{\left<#1,#2\right>}}
+		\newcommand{\couple}[2]{\ensuremath{\left(#1,#2\right)}}
+		\newcommand{\seq}[2]{\ensuremath{\displaystyle{\left(#1\right)_{#2}}}}
+
+	% notations d'Euler
+		\newcommand{\integrale}[2]{\ensuremath{\displaystyle{\int_{#1}^{#2}}}}
+		\newcommand{\somme}[2]{\ensuremath{\displaystyle{\sum_{#1}^{#2}}}}
+		\newcommand{\produit}[2]{\ensuremath{\displaystyle{\prod_{#1}^{#2}}}}
+		\newcommand{\union}[2]{\ensuremath{\displaystyle{\bigcup_{#1}^{#2}}}}
+		\newcommand{\inter}[2]{\ensuremath{\displaystyle{\bigcap_{#1}^{#2}}}}
+		\newcommand{\sommedirecte}[2]{\ensuremath{\displaystyle{\bigoplus_{#1}^{#2}}}}
+		\newcommand{\tensoriel}[2]{\ensuremath{\displaystyle{\bigotimes_{#1}^{#2}}}}
+		\newcommand{\cartesien}[2]{\ensuremath{\displaystyle{\bigtimes_{#1}^{#2}}}}
+
+	% normes
+		\newcommand{\abs}[1]{\ensuremath{\left| #1 \right|}}
+		\newcommand{\norm}[1]{\ensuremath{\left\| #1 \right\|}}
+
+	% probabilités
+		\newcommand{\univers}{\ensuremath{\left(\Omega, \mathcal F, \mathbb P \right)}}
+		\newcommand{\proba}[1]{\ensuremath{\mathbb P\left(#1\right)}}
+
+
+
+% mise en forme
+	\newcommand{\notion}{}
+
+
+
+% préférences personnelles de typographie
+	\renewcommand{\epsilon}{\varepsilon}
+	% \renewcommand{\phi}{\varphi}
+	\renewcommand{\tilde}{\widetilde}
+	\renewcommand{\hat}{\widehat}
+	\renewcommand{\bar}{\widebar}
+
+
+
+% opérateurs mathématiques
+	\DeclareMathOperator{\id}{id}
+	\DeclareMathOperator{\Ran}{Im}
+	\DeclareMathOperator{\Ker}{Ker}
+	\DeclareMathOperator{\Tr}{Tr}
+	\DeclareMathOperator{\supp}{supp}
+	\DeclareMathOperator{\Vect}{Vect}
+	\DeclareMathOperator{\pr}{pr}
+	\DeclareMathOperator{\Int}{Int}
+	%\DeclareMathOperator{\ln}{ln}
+
+
+
+% théorèmes
+	\theoremstyle{plain} %résultats
+		\newtheorem{thm}{Théorème}[section]
+		\newtheorem{cor}[thm]{Corollaire}
+		\newtheorem{pte}[thm]{Propriété}
+		\newtheorem{prop}[thm]{Proposition}
+		\newtheorem{res}[thm]{Résultat}
+		\newtheorem{lem}[thm]{Lemme}
+	\theoremstyle{definition} %définitions
+		\newtheorem{definition}[thm]{Définition}
+	\theoremstyle{remark} %remarques
+		\newtheorem*{rk}{Remarque}
