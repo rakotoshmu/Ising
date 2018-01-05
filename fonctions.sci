@@ -1,4 +1,4 @@
-clear;
+//clear;
 
 /*
 Dans tout le fichier, les paramètres du modèle d'Ising seront :
@@ -34,7 +34,7 @@ function y = pi(J,h,x)
     y = exp(double(s1+s2+s3));
 endfunction
 
-function X = ising_MH(J,h,n,p)
+function X = ising_MH_chain(J,h,n)
     /*
     Simule le modèle d'Ising selon un algorithme de Metropolis-Hasting, en partant d'un état initial aléatoire uniforme
     N,J,h les paramètres du modèle d'Ising
@@ -46,13 +46,62 @@ function X = ising_MH(J,h,n,p)
 
     X = int8(ones(N,N,n+1));
     X(:,:,1) = 2*int8((grand(N,N,"def")<0.5))-1;
-    M = 2*int8((grand(N,N,n,"def")<1-p))-1; //matrices par lesquelles multiplier X pour avoir la transition
+    I = ceil(N*grand(2,n,"def")); //indices aléatoires
+    S = 2*int8(grand(1,n,"def")<1/2)-1; //spin aléatoires
+    U = grand(1,n,"def"); //uniformes sur [0,1]
     for k = 1:n
-        Y = X(:,:,k) .* M(:,:,k);
-        b = int8(grand(1,1,"def") < min(1,pi(J,h,Y)/pi(J,h,X(:,:,k))));
-        X(:,:,k+1) = (1-b)*X(:,:,k) + b*Y;
+        Y = X(:,:,k);
+        Y(I(1,k),I(2,k)) = S(k);
+        if U(k) < min(1,pi(J,h,Y)/pi(J,h,X(:,:,k))) then
+            X(:,:,k+1) = Y;
+        else
+            X(:,:,k+1) = X(:,:,k);
+        end
     end
 endfunction
+
+function X = ising_MH(J,h,n)
+    /*
+    Comme ising_MH_chain, mais ne renvoie que l'état final
+    */
+    N = size(h,1);
+
+    X = 2*int8((grand(N,N,"def")<0.5))-1;
+    I = ceil(N*grand(2,n,"def")); //indices aléatoires
+    S = 2*int8(grand(1,n,"def")<1/2)-1; //spin aléatoires
+    U = grand(1,n,"def"); //uniformes sur [0,1]
+    for k = 1:n
+        Y = X;
+        Y(I(1,k),I(2,k)) = S(k);
+        if U(k) < min(1,pi(J,h,Y)/pi(J,h,X)) then
+            X = Y;
+        end
+    end
+endfunction
+
+//function X = ising_MH2(J,h,n,p)
+//    /*
+//    Simule le modèle d'Ising selon un algorithme de Metropolis-Hasting, en partant d'un état initial aléatoire uniforme
+//    N,J,h les paramètres du modèle d'Ising
+//    n entier le temps de simulation de la chaine
+//    p dans [0,1] probabilité de changer chaque coordonnée pour la proposition de M-H
+//    Renvoie X de taille N x N x n+1 (X(:,:,k) état de la chaîne de Markov à l'instant k+1)
+//    */
+//    N = size(h,1);
+//
+//    X = int8(ones(N,N,n+1));
+//    X(:,:,1) = 2*int8((grand(N,N,"def")<0.5))-1;
+//    M = 2*int8((grand(N,N,n,"def")<1-p))-1; //matrices des spins à changer
+//    U = grand(1,n,"def"); //uniformes
+//    for k = 1:n
+//        Y = X(:,:,k) .* M(:,:,k);
+//        if U(k) < min(1,pi(J,h,Y)/pi(J,h,X(:,:,k))) then
+//            X(:,:,k+1) = Y;
+//        else
+//            X(:,:,k+1) = X(:,:,k);
+//        end
+//    end
+//endfunction
 
 
 
@@ -62,13 +111,14 @@ endfunction
 Échantilloneur de Gibbs
 **********************/
 
-function Y = ising_gibbs_step(J,h,X,i,j)
+function Y = ising_gibbs_step(J,h,X,i,j,u)
     /*
     Effectue un pas de l'échantilloneur de Gibbs selon la coordonnée (i,j)
     Renvoie Y le résultat de ce pas
     N,J,h les paramètres du modèle d'Ising
     X de taille N x N l'état de départ
     i,j coordonnées
+    u dans [0,1] tiré uniformément
     */
     N = size(h,1);
 
@@ -89,10 +139,10 @@ function Y = ising_gibbs_step(J,h,X,i,j)
     p = 1/(1+exp(-2*double(l)));
 
     Y = X;
-    Y(i,j) = 2*int8((grand(1,1,"def")<p))-1;
+    Y(i,j) = 2*int8(u<p)-1;
 endfunction
 
-function X = ising_gibbs_seq(J,h,n)
+function X = ising_gibbs_seq_chain(J,h,n)
     /*
     Simule le modèle d'Ising par l'échantilloneur de Gibbs avec balayage séquentiel, en partant d'un état initial aléatoire uniforme
     N,J,h les paramètres du modèle d'Ising
@@ -105,17 +155,36 @@ function X = ising_gibbs_seq(J,h,n)
     X(:,:,1) = 2*int8((grand(N,N,"def")<0.5))-1;
     for k = 1:n
         Xtemp = X(:,:,k);
+        U = grand(N,N,"def");
         //balayage séquentiel
         for i = 1:N
             for j = 1:N
-                Xtemp = ising_gibbs_step(J,h,Xtemp,i,j);
+                Xtemp = ising_gibbs_step(J,h,Xtemp,i,j,U(i,j));
             end
         end
         X(:,:,k+1) = Xtemp;
     end
 endfunction
 
-function X = ising_gibbs_rand(J,h,n)
+function X = ising_gibbs_seq(J,h,n)
+    /*
+    Comme ising_gibbs_seq_chain, mais ne renvoie que l'état final
+    */
+    N = size(h,1);
+    
+    X = 2*int8((grand(N,N,"def")<0.5))-1;
+    for k = 1:n
+        U = grand(N,N,"def");
+        //balayage séquentiel
+        for i = 1:N
+            for j = 1:N
+                X = ising_gibbs_step(J,h,X,i,j,U(i,j));
+            end
+        end
+    end
+endfunction
+
+function X = ising_gibbs_rand_chain(J,h,n)
     /*
     Simule le modèle d'Ising par l'échantilloneur de Gibbs avec balayage séquentiel, en partant d'un état initial aléatoire uniforme
     N,J,h les paramètres du modèle d'Ising
@@ -127,9 +196,115 @@ function X = ising_gibbs_rand(J,h,n)
     X = int8(ones(N,N,n+1));
     X(:,:,1) = 2*int8((grand(N,N,"def")<0.5))-1;
     I = ceil(N*grand(2,n,"def")); //indices aléatoires
+    U = grand(1,n,"def"); //uniformes
     for k = 1:n //balayage aléatoire
-        X(:,:,k+1) = ising_gibbs_step(J,h,X(:,:,k),I(1,k),I(2,k));
+        X(:,:,k+1) = ising_gibbs_step(J,h,X(:,:,k),I(1,k),I(2,k),U(k));
     end
+endfunction
+
+function X = ising_gibbs_rand(J,h,n)
+    /*
+    Comme ising_gibbs_rand_chain, mais ne renvoie que l'état final
+    */
+    N = size(h,1);
+    
+    X = 2*int8((grand(N,N,"def")<0.5))-1;
+    I = ceil(N*grand(2,n,"def")); //indices aléatoires
+    U = grand(1,n,"def"); //uniformes
+    for k = 1:n //balayage aléatoire
+        X = ising_gibbs_step(J,h,X,I(1,k),I(2,k),U(k));
+    end
+endfunction
+
+
+
+
+
+/********************
+Couplage par le passé
+********************/
+
+function X = ising_coupling_MH(J,h)
+    /*
+    Simule le modèle d'Ising par couplage par le passé sur Metropolis-Hastings
+    N,J,h les paramètres du modèle d'Ising
+    Renvoie X de taille N x N
+    */
+    N = size(h,1);
+    
+    X = int8(ones(N,N));
+    Y = -int8(ones(N,N));
+    counter = 0;
+    fig = scf();
+    
+    while max(abs(X-Y))>0 do
+        i = ceil(N*grand(1,1,"def")); j = ceil(N*grand(1,1,"def")); //indices aléatoires
+        s = 2*int8(grand(1,1,"def")<1/2)-1; //spin aléatoire
+        u = grand(1,1,"def"); //uniforme sur [0,1]
+        Z = X; Z(i,j) = s;
+        if u < min(1,pi(J,h,Z)/pi(J,h,X)) then
+            X = Z;
+        end
+        Z = Y; Z(i,j) = s;
+        if u < min(1,pi(J,h,Z)/pi(J,h,Y)) then
+            Y = Z;
+        end
+        counter = counter + 1;
+        drawlater;
+        clf(fig);
+        subplot(2,2,1);
+        title("Nombre d''itérations : "+string(counter));
+        subplot(2,2,2);
+        title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
+        subplot(2,2,3);
+        Matplot(X+1); title("1");
+        subplot(2,2,4);
+        Matplot(Y+1); title("-1");
+        drawnow;
+    end
+    
+    close(fig);
+    printf("\t"+string(counter)+" itérations pour coupling from the past via MH\n");
+endfunction
+
+function X = ising_coupling_gibbs(J,h)
+    /*
+    Simule le modèle d'Ising par couplage par le passé sur l'échantillonneur de Gibbs
+    N,J,h les paramètres du modèle d'Ising
+    Renvoie X de taille N x N
+    */
+    N = size(h,1);
+    
+    X = int8(ones(N,N));
+    Y = -int8(ones(N,N));
+    counter = 0;
+    fig = scf();
+    
+    while max(abs(X-Y))>0 do
+        U = grand(N,N,"def");
+        //balayage séquentiel
+        for i = 1:N
+            for j = 1:N
+                X = ising_gibbs_step(J,h,X,i,j,U(i,j));
+                Y = ising_gibbs_step(J,h,Y,i,j,U(i,j));
+            end
+        end
+        counter = counter + 1;
+        drawlater;
+        clf(fig);
+        subplot(2,2,1);
+        title("Nombre d''itérations : "+string(counter));
+        subplot(2,2,2);
+        title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
+        subplot(2,2,3);
+        Matplot(X+1); title("1");
+        subplot(2,2,4);
+        Matplot(Y+1); title("-1");
+        drawnow;
+    end
+    
+    close(fig);
+    printf("\t"+string(counter)+" itérations pour coupling from the past via Gibbs\n");
 endfunction
 
 
@@ -165,6 +340,22 @@ function m = etat2num(X)
     m = sum(2.^(0:N^2-1) .* (matrix(X,1,-1)+1)/2);
 endfunction
 
+function p = ising_law(J,h)
+    /*
+    Renvoie la loi de probabilité du modèle d'Ising
+    p(m)/sum(p) est la probabilité du m-ième état
+    N,J,h les paramètres du modèle d'Ising
+    */
+    N = size(h,1);
+    d = 2^(N^2); //nombre d'états
+    
+    p = zeros(1,d);
+    for m = 1:d
+        x = num2etat(N,m);
+        p(m) = pi(J,h,x); //probabilité non normalisée
+    end
+endfunction
+
 function X = ising_exact(J,h,n)
     /*
     Simule un n-échantillon du modèle d'Ising de manière naïve (probabilités discrètes), à ne lancer qu'avec N petit
@@ -173,17 +364,12 @@ function X = ising_exact(J,h,n)
     Renvoie X de taille N x N x n
     */
     N = size(h,1);
-    d = 2^(N^2); //nombre d'états
     
-    p = zeros(1,d);
-    for m = 1:d
-        x = num2etat(m);
-        p(m) = pi(J,h,x); //probabilité non normalisée
-    end
+    p = ising_law(J,h);
     c = cumsum(p);
     for k = 1:n
         //m suit la loi p
         [t,m] = max(1*(grand(1,1,"def")*c(n)<c));
-        X(:,:,k) = num2etat(m);
+        X(:,:,k) = num2etat(N,m);
     end
 endfunction
