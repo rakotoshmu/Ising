@@ -23,16 +23,16 @@ function V = V_u(J,h,x,i,j)
     N = size(h,1);
     V = h(i,j);
     if i>1 then
-        V = V + J(i-1,j,1) * X(i-1,j);
+        V = V + J(i-1,j,1) * x(i-1,j);
     end
     if i<N then
-        V = V + J(i,j,1) * X(i+1,j);
+        V = V + J(i,j,1) * x(i+1,j);
     end
     if j>1 then
-        V = V + J(i,j-1,2) * X(i,j-1);
+        V = V + J(i,j-1,2) * x(i,j-1);
     end
     if j<N then
-        V = V + J(i,j,2) * X(i,j+1);
+        V = V + J(i,j,2) * x(i,j+1);
     end
 endfunction
 
@@ -74,7 +74,7 @@ function X = ising_MH(J,h,n)
     U = grand(1,n,"def"); //uniformes sur [0,1]
     for k = 1:n
         if X(I(1,k),I(2,k))~=S(k) then
-            v = V_u(J,h,X(:,:,k),I(1,k),I(2,k));
+            v = V_u(J,h,X,I(1,k),I(2,k));
             if U(k) < exp(double(2*S(k)*v)) then
                 X(I(1,k),I(2,k)) = S(k);
             end

@@ -44,8 +44,8 @@ Avec ce noyau instrumental, on peut réduire les calculs effectués : si $x$ est
 	\item soit $y \neq x$, auquel cas ils ne diffèrent que d'au plus une coordonnée (celle tirée uniformément). Si on note $u$ cette coordonnée et $s$ la nouvelle valeur, alors $s = y_u = - x_u$ et, en considérant que $T$ a été pris en compte dans $J$ et $h$,
 	\begin{align*}
 	\frac{\pi(y)}{\pi(x)}
-	&= \frac{\exp \left( \somme{v \sim u}{} J_{u,v} s x_{v} + h_{u} s \right)}{\exp \left( \somme{v \sim u}{} J_{u,v} x_{u} x_{v} + h_{u} x_{u} \right)}\\
-	&= \frac{e^{s V_u(x)}}{e^{x_{u} V_u(x)}}\\
+	&= \frac{\exp \left( \somme{v \sim u}{} J_{u,v} s x_{v} + h_{u} s \right)}{\exp \left( \somme{v \sim u}{} J_{u,v} (-s) x_{v} + h_{u} (-s) \right)}\\
+	&= \frac{e^{s V_u(x)}}{e^{-s V_u(x)}}\\
 	&= e^{2 s V_u(x)}
 	\end{align*}
 	où on a noté $V_u(x) \doteq \somme{v \sim u}{} J_{u,v} x_v + h_u$.
@@ -65,6 +65,8 @@ où on note encore $V_u(x) \doteq \somme{v \sim u}{} J_{u,v} x_v + h_u$. Donc $\
 
 Pour le couplage par le passé, deux fonctions d'actualisation sont possibles. Celle vue en cours est celle issue de l'échantillonneur de Gibbs (par balayage séquentiel). L'autre, présente dans le livre de Propp-Wilson, est issue de l'algorithme de Metropolis-Hastings (i.e. même transition qu'en section \ref{sec:MH}).
 
-Dans les deux cas, les choses se passent bien au-delà de la température critique. Cependant, en dessous de la température critique, les états $\pm(1,\hdots,1)$ sont les plus probables, donc les fonctions d'actualisation précédentes ont peu de chance de les faire passer à un autre état. En conséquence, même en laissant l'algorithme tourner longtemps, il ne termine pas (et revient même souvent à l'état initial).
+Dans les deux cas, les choses se passent bien au-delà de la température critique. Cependant, en dessous de la température critique, les états $\pm(1,\hdots,1)$ ont tendance à rester inchangés par les fonctions d'actualisation précédentes : dans les deux cas, la probabilité de réussir à changer un point $x_u$ égaux à ses quatre voisins est très faible : pour $J/T = \alpha$ constant, $h = 0$, elle vaut $\exp(-8 \alpha)$.
+
+En conséquence, l'algorithme met extrêmement longtemps à terminer (nous n'avons pas vu terminer). En observant l'évolution des chaînes de Markov (parties de $(1,\hdots,1)$ et de $(-1,\hdots,-1)$, on voit que souvent les deux chaînes reviennent à leur état initial, ce qui signifie que tout ce qui a été simulé jusqu'ici a été une perte de temps.
 
 \end{document}

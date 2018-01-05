@@ -1,10 +1,10 @@
 //rand("seed",75); //seed fixée
 
 /*
-Température critique : T = 1
-Sur mon ordinateur, pour N = 100, n fixé, ising_gibbs_seq met un peu plus de n minutes à terminer
+Température critique : T_c = 1
+Pour N = 100, n fixé, ising_gibbs_seq met un peu plus de n minutes à terminer
 */
-N = 100;
+N = 10;
 J0 = ones(N,N,2);
 h0 = zeros(N,N);
 n = 5;

@@ -1,10 +1,10 @@
 //rand("seed",75); //seed fixée
 
 N = 10;
-T = 1.1;
+T = 1;
 J = ones(N,N,2)/T;
 h = zeros(N,N)/T;
-n1 = 100;
+n1 = 10;
 n2 = 1000;
 n3 = 1000;
 
