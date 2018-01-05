@@ -15,23 +15,25 @@ Dans tout le fichier, les paramètres du modèle d'Ising seront :
 Metropolis-Hastings
 ******************/
 
-function y = pi(J,h,x)
+function V = V_u(J,h,x,i,j)
     /*
-    Calcule la loi non normalisée
+    Calcule et renvoie V_u(x) où u = (i,j) et x est un état (de taille N x N)
     N,J,h les paramètres du modèle d'Ising
-    x de taille N x N
-    Renvoie y = Z_T * pi(x)
     */
     N = size(h,1);
-
-    //intercation entre les voisins de même ordonnée
-    s1 = sum(J(1:N-1,:,1).*x(1:N-1,:).*x(2:N,:)); 
-    //intercation entre les voisins de même abscisse
-    s2 = sum(J(:,1:N-1,2).*x(:,1:N-1).*x(:,2:N)); 
-    //champ magnétique extérieur
-    s3 = sum(h.*x);
-
-    y = exp(double(s1+s2+s3));
+    V = h(i,j);
+    if i>1 then
+        V = V + J(i-1,j,1) * X(i-1,j);
+    end
+    if i<N then
+        V = V + J(i,j,1) * X(i+1,j);
+    end
+    if j>1 then
+        V = V + J(i,j-1,2) * X(i,j-1);
+    end
+    if j<N then
+        V = V + J(i,j,2) * X(i,j+1);
+    end
 endfunction
 
 function X = ising_MH_chain(J,h,n)
@@ -50,12 +52,12 @@ function X = ising_MH_chain(J,h,n)
     S = 2*int8(grand(1,n,"def")<1/2)-1; //spin aléatoires
     U = grand(1,n,"def"); //uniformes sur [0,1]
     for k = 1:n
-        Y = X(:,:,k);
-        Y(I(1,k),I(2,k)) = S(k);
-        if U(k) < min(1,pi(J,h,Y)/pi(J,h,X(:,:,k))) then
-            X(:,:,k+1) = Y;
-        else
-            X(:,:,k+1) = X(:,:,k);
+        X(:,:,k+1) = X(:,:,k);
+        if X(I(1,k),I(2,k),k)~=S(k) then
+            v = V_u(J,h,X(:,:,k),I(1,k),I(2,k));
+            if U(k) < exp(double(2*S(k)*v)) then
+                X(I(1,k),I(2,k),k+1) = S(k);
+            end
         end
     end
 endfunction
@@ -71,37 +73,14 @@ function X = ising_MH(J,h,n)
     S = 2*int8(grand(1,n,"def")<1/2)-1; //spin aléatoires
     U = grand(1,n,"def"); //uniformes sur [0,1]
     for k = 1:n
-        Y = X;
-        Y(I(1,k),I(2,k)) = S(k);
-        if U(k) < min(1,pi(J,h,Y)/pi(J,h,X)) then
-            X = Y;
+        if X(I(1,k),I(2,k))~=S(k) then
+            v = V_u(J,h,X(:,:,k),I(1,k),I(2,k));
+            if U(k) < exp(double(2*S(k)*v)) then
+                X(I(1,k),I(2,k)) = S(k);
+            end
         end
     end
 endfunction
-
-//function X = ising_MH2(J,h,n,p)
-//    /*
-//    Simule le modèle d'Ising selon un algorithme de Metropolis-Hasting, en partant d'un état initial aléatoire uniforme
-//    N,J,h les paramètres du modèle d'Ising
-//    n entier le temps de simulation de la chaine
-//    p dans [0,1] probabilité de changer chaque coordonnée pour la proposition de M-H
-//    Renvoie X de taille N x N x n+1 (X(:,:,k) état de la chaîne de Markov à l'instant k+1)
-//    */
-//    N = size(h,1);
-//
-//    X = int8(ones(N,N,n+1));
-//    X(:,:,1) = 2*int8((grand(N,N,"def")<0.5))-1;
-//    M = 2*int8((grand(N,N,n,"def")<1-p))-1; //matrices des spins à changer
-//    U = grand(1,n,"def"); //uniformes
-//    for k = 1:n
-//        Y = X(:,:,k) .* M(:,:,k);
-//        if U(k) < min(1,pi(J,h,Y)/pi(J,h,X(:,:,k))) then
-//            X(:,:,k+1) = Y;
-//        else
-//            X(:,:,k+1) = X(:,:,k);
-//        end
-//    end
-//endfunction
 
 
 
@@ -122,21 +101,7 @@ function Y = ising_gibbs_step(J,h,X,i,j,u)
     */
     N = size(h,1);
 
-    //l = \lambda_u où u = (i,j)
-    l = h(i,j);
-    if i>1 then
-        l = l + J(i-1,j,1) * X(i-1,j);
-    end
-    if i<N then
-        l = l + J(i,j,1) * X(i+1,j);
-    end
-    if j>1 then
-        l = l + J(i,j-1,2) * X(i,j-1);
-    end
-    if j<N then
-        l = l + J(i,j,2) * X(i,j+1);
-    end
-    p = 1/(1+exp(-2*double(l)));
+    p = 1/(1+exp(double(-2*V_u(J,h,X,i,j))));
 
     Y = X;
     Y(i,j) = 2*int8(u<p)-1;
@@ -150,7 +115,7 @@ function X = ising_gibbs_seq_chain(J,h,n)
     Renvoie X de taille N x N x n+1 (X(:,:,k) état de la chaîne de Markov à l'instant k+1)
     */
     N = size(h,1);
-    
+
     X = int8(ones(N,N,n+1));
     X(:,:,1) = 2*int8((grand(N,N,"def")<0.5))-1;
     for k = 1:n
@@ -171,7 +136,7 @@ function X = ising_gibbs_seq(J,h,n)
     Comme ising_gibbs_seq_chain, mais ne renvoie que l'état final
     */
     N = size(h,1);
-    
+
     X = 2*int8((grand(N,N,"def")<0.5))-1;
     for k = 1:n
         U = grand(N,N,"def");
@@ -192,7 +157,7 @@ function X = ising_gibbs_rand_chain(J,h,n)
     Renvoie X de taille N x N x n+1 (X(:,:,k) état de la chaîne de Markov à l'instant k+1)
     */
     N = size(h,1);
-    
+
     X = int8(ones(N,N,n+1));
     X(:,:,1) = 2*int8((grand(N,N,"def")<0.5))-1;
     I = ceil(N*grand(2,n,"def")); //indices aléatoires
@@ -207,7 +172,7 @@ function X = ising_gibbs_rand(J,h,n)
     Comme ising_gibbs_rand_chain, mais ne renvoie que l'état final
     */
     N = size(h,1);
-    
+
     X = 2*int8((grand(N,N,"def")<0.5))-1;
     I = ceil(N*grand(2,n,"def")); //indices aléatoires
     U = grand(1,n,"def"); //uniformes
@@ -231,25 +196,34 @@ function X = ising_coupling_MH(J,h)
     Renvoie X de taille N x N
     */
     N = size(h,1);
-    
+
     X = int8(ones(N,N));
     Y = -int8(ones(N,N));
     counter = 0;
     fig = scf();
-    
+
     while max(abs(X-Y))>0 do
         i = ceil(N*grand(1,1,"def")); j = ceil(N*grand(1,1,"def")); //indices aléatoires
         s = 2*int8(grand(1,1,"def")<1/2)-1; //spin aléatoire
         u = grand(1,1,"def"); //uniforme sur [0,1]
-        Z = X; Z(i,j) = s;
-        if u < min(1,pi(J,h,Z)/pi(J,h,X)) then
-            X = Z;
+
+        if X(i,j)~=s then
+            v = V_u(J,h,X,i,j);
+            if u < exp(double(2*s*v)) then
+                X(i,j) = s;
+            end
         end
-        Z = Y; Z(i,j) = s;
-        if u < min(1,pi(J,h,Z)/pi(J,h,Y)) then
-            Y = Z;
+
+        if Y(i,j)~=s then
+            v = V_u(J,h,Y,i,j);
+            if u < exp(double(2*s*v)) then
+                Y(i,j) = s;
+            end
         end
+
         counter = counter + 1;
+        /* Permet d'afficher l'avancement du couplage
+        */
         drawlater;
         clf(fig);
         subplot(2,2,1);
@@ -262,7 +236,7 @@ function X = ising_coupling_MH(J,h)
         Matplot(Y+1); title("-1");
         drawnow;
     end
-    
+
     close(fig);
     printf("\t"+string(counter)+" itérations pour coupling from the past via MH\n");
 endfunction
@@ -274,12 +248,12 @@ function X = ising_coupling_gibbs(J,h)
     Renvoie X de taille N x N
     */
     N = size(h,1);
-    
+
     X = int8(ones(N,N));
     Y = -int8(ones(N,N));
     counter = 0;
     fig = scf();
-    
+
     while max(abs(X-Y))>0 do
         U = grand(N,N,"def");
         //balayage séquentiel
@@ -290,6 +264,8 @@ function X = ising_coupling_gibbs(J,h)
             end
         end
         counter = counter + 1;
+        /* Permet d'afficher l'avancement du couplage
+        */
         drawlater;
         clf(fig);
         subplot(2,2,1);
@@ -301,8 +277,9 @@ function X = ising_coupling_gibbs(J,h)
         subplot(2,2,4);
         Matplot(Y+1); title("-1");
         drawnow;
+        
     end
-    
+
     close(fig);
     printf("\t"+string(counter)+" itérations pour coupling from the past via Gibbs\n");
 endfunction
@@ -340,6 +317,25 @@ function m = etat2num(X)
     m = sum(2.^(0:N^2-1) .* (matrix(X,1,-1)+1)/2);
 endfunction
 
+function y = pi(J,h,x)
+    /*
+    Calcule la loi non normalisée
+    N,J,h les paramètres du modèle d'Ising
+    x de taille N x N
+    Renvoie y = Z_T * pi(x)
+    */
+    N = size(h,1);
+
+    //intercation entre les voisins de même ordonnée
+    s1 = sum(J(1:N-1,:,1).*x(1:N-1,:).*x(2:N,:)); 
+    //intercation entre les voisins de même abscisse
+    s2 = sum(J(:,1:N-1,2).*x(:,1:N-1).*x(:,2:N)); 
+    //champ magnétique extérieur
+    s3 = sum(h.*x);
+
+    y = exp(double(s1+s2+s3));
+endfunction
+
 function p = ising_law(J,h)
     /*
     Renvoie la loi de probabilité du modèle d'Ising
@@ -348,7 +344,7 @@ function p = ising_law(J,h)
     */
     N = size(h,1);
     d = 2^(N^2); //nombre d'états
-    
+
     p = zeros(1,d);
     for m = 1:d
         x = num2etat(N,m);
@@ -364,7 +360,7 @@ function X = ising_exact(J,h,n)
     Renvoie X de taille N x N x n
     */
     N = size(h,1);
-    
+
     p = ising_law(J,h);
     c = cumsum(p);
     for k = 1:n

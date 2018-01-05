@@ -7,7 +7,6 @@ h = zeros(N,N)/T;
 n1 = 100;
 n2 = 1000;
 n3 = 1000;
-n4 = 10;
 
 printf("Temps d''exécution :\n");
 
