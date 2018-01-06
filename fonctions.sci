@@ -306,6 +306,7 @@ function X = ising_coupling_gibbs(J,h)
     end
 
     close(fig);
+    printf("\tTemps de coalition pour CFTP via Gibbs : "+string(n/2)+"\n");
 endfunction
 
 
