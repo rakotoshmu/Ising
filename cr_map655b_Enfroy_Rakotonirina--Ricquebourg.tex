@@ -65,8 +65,10 @@ où on note encore $V_u(x) \doteq \somme{v \sim u}{} J_{u,v} x_v + h_u$. Donc $\
 
 Pour le couplage par le passé, deux fonctions d'actualisation sont possibles. Celle vue en cours est celle issue de l'échantillonneur de Gibbs (par balayage séquentiel). L'autre, présente dans le livre de Propp-Wilson, est issue de l'algorithme de Metropolis-Hastings (i.e. même transition qu'en section \ref{sec:MH}).
 
-Dans les deux cas, les choses se passent bien au-delà de la température critique. Cependant, en dessous de la température critique, les états $\pm(1,\hdots,1)$ ont tendance à rester inchangés par les fonctions d'actualisation précédentes : dans les deux cas, la probabilité de réussir à changer un point $x_u$ égaux à ses quatre voisins est très faible : pour $J/T = \alpha$ constant, $h = 0$, elle vaut $\exp(-8 \alpha)$.
+L'algorithme consiste à répéter les algorithmes vers le futur jusqu'à un temps donné et, si il n'y a pas eu coalition, ajouter des nouvelles actualisations au début du processus, ce qui demande de recommencer du début. Pour gagner du temps, plutôt que d'ajouter une actualisation à chaque fois, on double le nombre d'actualisations.
 
-En conséquence, l'algorithme met extrêmement longtemps à terminer (nous n'avons pas vu terminer). En observant l'évolution des chaînes de Markov (parties de $(1,\hdots,1)$ et de $(-1,\hdots,-1)$, on voit que souvent les deux chaînes reviennent à leur état initial, ce qui signifie que tout ce qui a été simulé jusqu'ici a été une perte de temps.
+Pour les deux méthodes (Metropolis-Hastings et échantillonneur de Gibbs), les choses se passent bien au-delà de la température critique. Cependant, en dessous de la température critique, les états $\pm(1,\hdots,1)$ ont tendance à rester inchangés par les fonctions d'actualisation précédentes : dans les deux cas, la probabilité de réussir à changer un point $x_u$ égaux à ses quatre voisins est très faible : pour $J/T = \alpha$ constant, $h = 0$, elle vaut $\exp(-8 \alpha)$.
+
+En conséquence, l'algorithme met extrêmement longtemps à terminer (nous n'avons pas vu terminer). En observant l'évolution des chaînes de Markov (parties de $(1,\hdots,1)$ et de $(-1,\hdots,-1)$), on voit que souvent les deux chaînes reviennent à leur état initial, ce qui signifie que tout ce qui a été simulé jusqu'ici a été une perte de temps.
 
 \end{document}
