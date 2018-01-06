@@ -73,10 +73,14 @@ function X = ising_MH(J,h,n)
     S = 2*int8(grand(1,n,"def")<1/2)-1; //spin aléatoires
     U = grand(1,n,"def"); //uniformes sur [0,1]
     for k = 1:n
-        if X(I(1,k),I(2,k))~=S(k) then
-            v = V_u(J,h,X,I(1,k),I(2,k));
-            if U(k) < exp(double(2*S(k)*v)) then
-                X(I(1,k),I(2,k)) = S(k);
+        i = I(1,k);
+        j = I(2,k);
+        s = S(k);
+        u = U(k);
+        if X(i,j)~=s then
+            v = V_u(J,h,X,i,j);
+            if u < exp(double(2*s*v)) then
+                X(i,j) = s;
             end
         end
     end
@@ -196,118 +200,60 @@ function X = ising_coupling_MH(J,h)
     Renvoie X de taille N x N
     */
     N = size(h,1);
+    fig = scf();
 
     X = int8(ones(N,N));
     Y = -int8(ones(N,N));
-    counter = 0;
-    fig = scf();
-
+    I = [];
+    S = [];
+    U = [];
+    n_old = 0;
+    n = N^2; //nombre d'update à faire
     while max(abs(X-Y))>0 do
-        i = ceil(N*grand(1,1,"def")); j = ceil(N*grand(1,1,"def")); //indices aléatoires
-        s = 2*int8(grand(1,1,"def")<1/2)-1; //spin aléatoire
-        u = grand(1,1,"def"); //uniforme sur [0,1]
+        //tirer les aléas manquant pour avoir n updates
+        //les aléas sont rangés dans le sens inverse du temps : u_n, ..., u_2, u_1
+        I = [ceil(N*grand(2,n-n_old,"def")), I]; //indices aléatoires
+        S = [2*int8(grand(1,n-n_old,"def")<1/2)-1, S]; //spins aléatoires
+        U = [grand(1,n-n_old,"def"), U]; //unif([0,1])
 
-        if X(i,j)~=s then
-            v = V_u(J,h,X,i,j);
-            if u < exp(double(2*s*v)) then
-                X(i,j) = s;
-            end
-        end
-
-        if Y(i,j)~=s then
-            v = V_u(J,h,Y,i,j);
-            if u < exp(double(2*s*v)) then
-                Y(i,j) = s;
-            end
-        end
-
-        counter = counter + 1;
-        /* Permet d'afficher l'avancement du couplage
-        */
-        drawlater;
-        clf(fig);
-        subplot(2,2,1);
-        title("Nombre d''itérations : "+string(counter));
-        subplot(2,2,2);
-        title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
-        subplot(2,2,3);
-        Matplot(X+1); title("1");
-        subplot(2,2,4);
-        Matplot(Y+1); title("-1");
-        drawnow;
-    end
-
-    close(fig);
-    printf("\t"+string(counter)+" itérations pour coupling from the past via MH\n");
-endfunction
-
-function X = ising_coupling_past_MH(J,h)
-    
-    //Simule le modèle d'Ising par couplage par le passé sur Metropolis-Hastings
-    //N,J,h les paramètres du modèle d'Ising
-    //Renvoie X de taille N x N
-    
-    N = size(h,1);
-
-    X = int8(ones(N,N));
-    Y = -int8(ones(N,N));
-    counter = 0;
-    fig = scf();
-    A=[]
-    B=[]
-    C=[]
-    D=[]
-    while max(abs(X-Y))>0 do
         X = int8(ones(N,N));
         Y = -int8(ones(N,N));
-        
-        
-        i = ceil(N*grand(1,1,"def")); j = ceil(N*grand(1,1,"def")); //indices aléatoires
-        s = 2*int8(grand(1,1,"def")<1/2)-1; //spin aléatoire
-        u = grand(1,1,"def"); //uniforme sur [0,1]
-        A=[A,[i]]
-        B=[B,[j]]
-        C=[C,[s]]
-        D=[D,[u]]
-        //retenir les alea
-        n=size(A,2)
-        for r=1:n
-            i=A(1,n-r+1)
-            j=B(1,n-r+1)
-            s=C(1,n-r+1)
-            u=D(1,n-r+1)
+        for k=1:n
+            i=I(1,k);
+            j=I(2,k);
+            s=S(k);
+            u=U(k);
             if X(i,j)~=s then
                 v = V_u(J,h,X,i,j);
                 if u < exp(double(2*s*v)) then
                     X(i,j) = s;
                 end
             end
-
             if Y(i,j)~=s then
                 v = V_u(J,h,Y,i,j);
                 if u < exp(double(2*s*v)) then
                     Y(i,j) = s;
                 end
             end
+            //Permet d'afficher l'avancement du couplage
+            drawlater;
+            clf(fig);
+            subplot(2,2,1);
+            title("Nombre k d''update : "+string(k)+"/"+string(n));
+            subplot(2,2,2);
+            title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
+            subplot(2,2,3);
+            Matplot(X+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (1,\hdots,1)$");
+            subplot(2,2,4);
+            Matplot(Y+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (-1,\hdots,-1)$");
+            drawnow;
         end
-        counter = counter + 1;
-         //Permet d'afficher l'avancement du couplage
-        
-        drawlater;
-        clf(fig);
-        subplot(2,2,1);
-        title("Nombre d''itérations : "+string(counter));
-        subplot(2,2,2);
-        title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
-        subplot(2,2,3);
-        Matplot(X+1); title("1");
-        subplot(2,2,4);
-        Matplot(Y+1); title("-1");
-        drawnow;
+        n_old = n;
+        n = 2*n; //augmenter le nombre d'update nécessaires
     end
 
     close(fig);
-    printf("\t"+string(counter)+" itérations pour coupling from the past via MH\n");
+    printf("\tTemps de coalition pour CFTP via MH : "+string(n/2)+"\n");
 endfunction
 
 function X = ising_coupling_gibbs(J,h)
@@ -317,40 +263,49 @@ function X = ising_coupling_gibbs(J,h)
     Renvoie X de taille N x N
     */
     N = size(h,1);
+    fig = scf();
 
     X = int8(ones(N,N));
     Y = -int8(ones(N,N));
-    counter = 0;
-    fig = scf();
-
+    U = [];
+    n_old = 0;
+    n = 1; //nombre d'update à faire
     while max(abs(X-Y))>0 do
-        U = grand(N,N,"def");
-        //balayage séquentiel
-        for i = 1:N
-            for j = 1:N
-                X = ising_gibbs_step(J,h,X,i,j,U(i,j));
-                Y = ising_gibbs_step(J,h,Y,i,j,U(i,j));
-            end
-        end
-        counter = counter + 1;
-        /* Permet d'afficher l'avancement du couplage
-        */
-        drawlater;
-        clf(fig);
-        subplot(2,2,1);
-        title("Nombre d''itérations : "+string(counter));
-        subplot(2,2,2);
-        title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
-        subplot(2,2,3);
-        Matplot(X+1); title("1");
-        subplot(2,2,4);
-        Matplot(Y+1); title("-1");
-        drawnow;
+        //tirer les aléas manquant pour avoir n updates
+        //les aléas sont rangés dans le sens inverse du temps : u_n, ..., u_2, u_1
+        temp = zeros(N,N,n); //resize_matrix(U,[N,N,n]);
+        temp(:,:,1:n-n_old) = grand(N,N,n-n_old,"def"); //tirages manquant
+        temp(:,:,(n-n_old+1):n) = U; //anciens tirages
+        U = temp;
         
+        X = int8(ones(N,N));
+        Y = -int8(ones(N,N));
+        for k=1:n
+          //balayage séquentiel
+            for i = 1:N
+                for j = 1:N
+                    X = ising_gibbs_step(J,h,X,i,j,U(i,j,k));
+                    Y = ising_gibbs_step(J,h,Y,i,j,U(i,j,k));
+                end
+            end
+            //Permet d'afficher l'avancement du couplage
+            drawlater;
+            clf(fig);
+            subplot(2,2,1);
+            title("Nombre k d''update : "+string(k)+"/"+string(n));
+            subplot(2,2,2);
+            title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
+            subplot(2,2,3);
+            Matplot(X+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (1,\hdots,1)$");
+            subplot(2,2,4);
+            Matplot(Y+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (-1,\hdots,-1)$");
+            drawnow;
+        end
+        n_old = n;
+        n = 2*n; //augmenter le nombre d'update nécessaires
     end
 
     close(fig);
-    printf("\t"+string(counter)+" itérations pour coupling from the past via Gibbs\n");
 endfunction
 
 

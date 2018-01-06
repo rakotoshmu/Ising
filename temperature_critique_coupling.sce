@@ -1,24 +1,24 @@
 //rand("seed",75); //seed fixée
 
 /*Température critique : T_c = 1
-Pour T<1, les algorithmes de couplage ne terminent pas (en temps court)
+Pour T<1, les algorithmes de couplage ne terminent pas (en temps court)*/
 N = 10;
 J = ones(N,N,2);
 h = zeros(N,N);
 T1 = 1.1;
 T2 = 1.01;
 T3 = 1;
-T4 = 0.99;*/
+T4 = 0.99;
 
 /*Température critique ?
-Pour T<T_c, les algorithmes de couplage ne terminent pas (en temps court)*/
+Pour T<T_c, les algorithmes de couplage ne terminent pas (en temps court)
 N = 10;
 J = ones(N,N,2);
 h = 5*ones(N,N);
 T1 = 10;
 T2 = 7.5;
 T3 = 5;
-T4 = 2.5;
+T4 = 2.5;*/
 
 
 scf(1); clf(1);
