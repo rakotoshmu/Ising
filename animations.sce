@@ -1,12 +1,12 @@
 //rand("seed",75); //seed fixée
 
-N = 10;
-T = 1;
+N = 20;
+T = 5;
 J = ones(N,N,2)/T;
 h = zeros(N,N)/T;
 n1 = 10;
-n2 = 1000;
-n3 = 1000;
+n2 = 4000;
+n3 = 4000;
 
 printf("Temps d''exécution :\n");
 

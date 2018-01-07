@@ -255,7 +255,7 @@ function X = ising_coupling_MH(J,h)
             subplot(2,2,1);
             title("Nombre k d''update : "+string(k)+"/"+string(n));
             subplot(2,2,2);
-            title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
+            Matplot((X+Y)/2+1); title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
             subplot(2,2,3);
             Matplot(X+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (1,\hdots,1)$");
             subplot(2,2,4);
@@ -308,7 +308,7 @@ function X = ising_coupling_gibbs(J,h)
             subplot(2,2,1);
             title("Nombre k d''update : "+string(k)+"/"+string(n));
             subplot(2,2,2);
-            title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
+            Matplot((X+Y)/2+1); title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
             subplot(2,2,3);
             Matplot(X+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (1,\hdots,1)$");
             subplot(2,2,4);

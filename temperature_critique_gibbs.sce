@@ -5,10 +5,10 @@ Température critique :
     1 < T_c < 1.01 pour conditions au bord tronquées
     T_c théorique ~ 2.269 pour conditions au bord périodiques
 */
-N = 50;
+N = 10;
 J = ones(N,N,2);
 h = zeros(N,N);
-n = 50;
+n = 5;
 //T1 = 2.28; T2 = 2.27; T3 = 2.26; T4 = 2.25;
 T1 = 2.4; T2 = 2.3; T3 = 2.2; T4 = 2.1;
 //T1 = 3; T2 = 2.5; T3 = 2; T4 = 1.5;
