@@ -21,6 +21,19 @@ function V = V_u(J,h,x,i,j)
     N,J,h les paramètres du modèle d'Ising
     */
     N = size(h,1);
+    
+    /* conditions au bords périodiques */
+    im = i-1 + N*(i==1);
+    ip = i+1 - N*(i==N);
+    jm = j-1 + N*(j==1);
+    jp = j+1 - N*(j==N);
+    V = h(i,j) + ...
+        J(im,j,1) * double(x(im,j)) + ...
+        J(i,j,1) * double(x(ip,j)) + ...
+        J(i,jm,2) * double(x(i,jm)) + ...
+        J(i,j,2) * double(x(i,jp));
+    
+    /* conditions au bords tronquées
     V = h(i,j);
     if i>1 then
         V = V + J(i-1,j,1) * x(i-1,j);
@@ -34,6 +47,7 @@ function V = V_u(J,h,x,i,j)
     if j<N then
         V = V + J(i,j,2) * x(i,j+1);
     end
+    */
 endfunction
 
 function X = ising_MH_chain(J,h,n)
@@ -352,9 +366,11 @@ function y = pi(J,h,x)
     N = size(h,1);
 
     //intercation entre les voisins de même ordonnée
-    s1 = sum(J(1:N-1,:,1).*x(1:N-1,:).*x(2:N,:)); 
+//    s1 = sum(J(1:N-1,:,1).*x(1:N-1,:).*x(2:N,:)); //conditions au bords tronquées
+    s1 = sum(J(:,:,1).*x.*x([2:N 1],:)); //conditions au bords périodiques
     //intercation entre les voisins de même abscisse
-    s2 = sum(J(:,1:N-1,2).*x(:,1:N-1).*x(:,2:N)); 
+//    s2 = sum(J(:,1:N-1,2).*x(:,1:N-1).*x(:,2:N)); //conditions au bords tronquées
+    s2 = sum(J(:,:,2).*x.*x(:,[2:N 1])); //conditions au bords périodiques
     //champ magnétique extérieur
     s3 = sum(h.*x);
 

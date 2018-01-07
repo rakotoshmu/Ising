@@ -21,7 +21,7 @@ T3 = 5;
 T4 = 2.5;*/
 
 
-scf(1); clf(1);
+fig_tcc = scf(); clf(fig_tcc);
 printf("Temps d''exécution :\n");
 
 tic();
