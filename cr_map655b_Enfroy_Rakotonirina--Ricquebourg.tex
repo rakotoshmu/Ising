@@ -28,7 +28,8 @@ où $T>0$ est appelée la température, $Z_T$ est une constante de normalisation
 \end{definition}
 
 Pour l'implémentation, on remarque qu'il n'y a pas besoin du paramètre $T$, qu'on peut compter dans $J$ et $h$. On représente alors ces paramètres en prenant $x \in \mathcal M_{N,N}(\set{\pm 1})$, $h \in \mathcal M_{N,N}(\mathbb R)$ et $J$ comme une matrice à trois entrées $\tilde J \in \mathcal M_{N,N,2}(\mathbb R)$ où
-$$\tilde J_{i,j,1} = J_{(i,j),(i+1,j)} \text{ et } \tilde J_{i,j,2} = J_{(i,j),(i,j+1)}.$$
+$$\tilde J_{i,j,1} = J_{(i,j),(i+1,j)} \text{ et } \tilde J_{i,j,2} = J_{(i,j),(i,j+1)}$$
+où $i+1$ et $j+1$ sont à comprendre modulo $N$ pour obtenir des conditions aux bords périodiques.
 
 \section{Simulation naïve en petite taille}
 
