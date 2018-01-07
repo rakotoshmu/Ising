@@ -385,12 +385,12 @@ function X = ising_exact(J,h,n)
     Renvoie X de taille N x N x n
     */
     N = size(h,1);
-
+    d=2^(N^2)
     p = ising_law(J,h);
     c = cumsum(p);
     for k = 1:n
         //m suit la loi p
-        [t,m] = max(1*(grand(1,1,"def")*c(n)<c));
+        [t,m] = max(1*(grand(1,1,"def")*c(d)<c));
         X(:,:,k) = num2etat(N,m);
     end
 endfunction
