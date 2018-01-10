@@ -367,10 +367,10 @@ function y = pi(J,h,x)
 
     //intercation entre les voisins de même ordonnée
 //    s1 = sum(J(1:N-1,:,1).*x(1:N-1,:).*x(2:N,:)); //conditions au bords tronquées
-    s1 = sum(J(:,:,1).*x.*x([2:N 1],:)); //conditions au bords périodiques
+    s1 = sum(J(:,:,1).*double(x.*x([2:N 1],:))); //conditions au bords périodiques
     //intercation entre les voisins de même abscisse
 //    s2 = sum(J(:,1:N-1,2).*x(:,1:N-1).*x(:,2:N)); //conditions au bords tronquées
-    s2 = sum(J(:,:,2).*x.*x(:,[2:N 1])); //conditions au bords périodiques
+    s2 = sum(J(:,:,2).*double(x.*x(:,[2:N 1]))); //conditions au bords périodiques
     //champ magnétique extérieur
     s3 = sum(h.*x);
 
