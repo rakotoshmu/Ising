@@ -31,6 +31,11 @@ Pour l'implémentation, on remarque qu'il n'y a pas besoin du paramètre $T$, qu
 $$\tilde J_{i,j,1} = J_{(i,j),(i+1,j)} \text{ et } \tilde J_{i,j,2} = J_{(i,j),(i,j+1)}$$
 où $i+1$ et $j+1$ sont à comprendre modulo $N$ pour obtenir des conditions aux bords périodiques.
 
+\section{Vérification des algorithmes}
+
+Pour vérifier que les algorithmes MCMC fonctionnent, on vérifie l'ergodicité sur la fonction $M(x) = \frac{1}{N^2} \sum_u x_u$. $M$ est appelée la magnétisation. Dans le cas où $h = 0$, on a $\pi(-x) = \pi(x)$ et $M(-x) = -M(x)$ donc si $X \sim \pi$, alors $\mathbb E(M(X)) = 0$. Si la chaîne $(X^{(n)})_n$ est ergodique, on aura donc la convergence presque sûre
+$$\frac{1}{n} \sum_i M(X^{(i)}) \xrightarrow[n \rightarrow +\infty]{} 0$$
+
 \section{Simulation naïve en petite taille}
 
 En petite taille, on peut faire une simulation naïve. Pour cela, on numérote les $2^{N^2}$ états (dans l'ordre lexicographique en lisant les matrices colonne par colonne), on calcule exactement la loi et on choisit un numéro en utilisant cette loi et une loi uniforme sur $[0,1]$.
