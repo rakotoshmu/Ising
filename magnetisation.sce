@@ -59,4 +59,4 @@ for k = 1:n+1
 end
 subplot(2,2,4);
 plot(1:n+1,cumsum(m) ./ (1:(n+1)),[1 n+1],[0 0]);
-title("Ergodicité pour Coupling From The Past par Metropolis-Hastings");
+title("Loi des grands nombres pour Coupling From The Past (M-H)");

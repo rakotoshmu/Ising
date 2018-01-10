@@ -8,6 +8,7 @@
 % \usepackage{mathabx}
 % \usepackage{bbm}
 \usepackage{stmaryrd}
+\usepackage{graphicx}
 % \usepackage{enumerate}
 
 \input{preamble_Macro}
@@ -30,12 +31,6 @@ où $T>0$ est appelée la température, $Z_T$ est une constante de normalisation
 Pour l'implémentation, on remarque qu'il n'y a pas besoin du paramètre $T$, qu'on peut compter dans $J$ et $h$. On représente alors ces paramètres en prenant $x \in \mathcal M_{N,N}(\set{\pm 1})$, $h \in \mathcal M_{N,N}(\mathbb R)$ et $J$ comme une matrice à trois entrées $\tilde J \in \mathcal M_{N,N,2}(\mathbb R)$ où
 $$\tilde J_{i,j,1} = J_{(i,j),(i+1,j)} \text{ et } \tilde J_{i,j,2} = J_{(i,j),(i,j+1)}$$
 où $i+1$ et $j+1$ sont à comprendre modulo $N$ pour obtenir des conditions aux bords périodiques.
-
-\section{Vérification des algorithmes}
-
-Pour vérifier que les algorithmes MCMC fonctionnent, on vérifie l'ergodicité sur la fonction $M(x) = \frac{1}{N^2} \sum_u x_u$. $M$ est appelée la magnétisation. Dans le cas où $h = 0$, on a $\pi(-x) = \pi(x)$ et $M(-x) = -M(x)$ donc si $X \sim \pi$, alors $\mathbb E(M(X)) = 0$. Si la chaîne $(X^{(n)})_n$ est ergodique, on aura donc la convergence presque sûre
-$$\frac{1}{n} \sum_i M(X^{(i)}) \xrightarrow[n \rightarrow +\infty]{} 0$$
-En pratique, à basse température, les algorithmes ont tendance à rester longtemps dans les états $(1,\hdots,1)$ et $(-1,\hdots,-1)$ (qui sont très probables à basse température) donc il faudrait attendre un temps très long pour voir cette convergence. On se place donc à haute température.
 
 \section{Simulation naïve en petite taille}
 
@@ -77,5 +72,21 @@ L'algorithme consiste à répéter les algorithmes vers le futur jusqu'à un tem
 Pour les deux méthodes (Metropolis-Hastings et échantillonneur de Gibbs), les choses se passent bien au-delà de la température critique. Cependant, en dessous de la température critique, les états $\pm(1,\hdots,1)$ ont tendance à rester inchangés par les fonctions d'actualisation précédentes : dans les deux cas, la probabilité de réussir à changer un point $x_u$ égaux à ses quatre voisins est très faible : pour $J/T = \alpha$ constant, $h = 0$, elle vaut $\exp(-8 \alpha)$.
 
 En conséquence, l'algorithme met extrêmement longtemps à terminer (nous n'avons pas vu terminer). En observant l'évolution des chaînes de Markov (parties de $(1,\hdots,1)$ et de $(-1,\hdots,-1)$), on voit que souvent les deux chaînes reviennent à leur état initial, ce qui signifie que tout ce qui a été simulé jusqu'ici a été une perte de temps.
+
+\section{Vérification des algorithmes}
+
+Pour vérifier que les algorithmes MCMC fonctionnent, on vérifie l'ergodicité sur la fonction $M(x) = \frac{1}{N^2} \sum_u x_u$. $M$ est appelée la magnétisation. Dans le cas où $h = 0$, on a $\pi(-x) = \pi(x)$ et $M(-x) = -M(x)$ donc si $X \sim \pi$, alors $\mathbb E(M(X)) = 0$. Si la chaîne $(X^{(n)})_n$ est ergodique, on aura donc la convergence presque sûre
+$$\frac{1}{n} \sum_i M(X^{(i)}) \xrightarrow[n \rightarrow +\infty]{} 0$$
+En pratique, à basse température, les algorithmes ont tendance à rester longtemps dans les états $(1,\hdots,1)$ et $(-1,\hdots,-1)$ (qui sont très probables à basse température) donc il faudrait attendre un temps très long pour voir cette convergence. On se place donc à haute température.
+
+Pour l'algorithme exact (couplage par le passé), on simule de manière indépendante un échantillon $(X^{(n)})_n$ et on vérifie que la loi des grands nombres s'applique :
+$$\frac{1}{n} \sum_i M(X^{(i)}) \xrightarrow[n \rightarrow +\infty]{} 0.$$
+
+On obtient les résultats de la figure \ref{fig:ergodic}.
+\begin{figure}
+	\label{fig:ergodic}
+	\includegraphics[width=0.8\textwidth]{ergodicite_magnetisation.png}
+	\caption{Vérification de l'ergodicité et de la loi des grands nombres sur la magnétisation}
+\end{figure}
 
 \end{document}
