@@ -35,6 +35,7 @@ où $i+1$ et $j+1$ sont à comprendre modulo $N$ pour obtenir des conditions aux
 
 Pour vérifier que les algorithmes MCMC fonctionnent, on vérifie l'ergodicité sur la fonction $M(x) = \frac{1}{N^2} \sum_u x_u$. $M$ est appelée la magnétisation. Dans le cas où $h = 0$, on a $\pi(-x) = \pi(x)$ et $M(-x) = -M(x)$ donc si $X \sim \pi$, alors $\mathbb E(M(X)) = 0$. Si la chaîne $(X^{(n)})_n$ est ergodique, on aura donc la convergence presque sûre
 $$\frac{1}{n} \sum_i M(X^{(i)}) \xrightarrow[n \rightarrow +\infty]{} 0$$
+En pratique, à basse température, les algorithmes ont tendance à rester longtemps dans les états $(1,\hdots,1)$ et $(-1,\hdots,-1)$ (qui sont très probables à basse température) donc il faudrait attendre un temps très long pour voir cette convergence. On se place donc à haute température.
 
 \section{Simulation naïve en petite taille}
 

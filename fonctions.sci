@@ -21,18 +21,18 @@ function V = V_u(J,h,x,i,j)
     N,J,h les paramètres du modèle d'Ising
     */
     N = size(h,1);
-    
+
     /* conditions au bords périodiques */
     im = i-1 + N*(i==1);
     ip = i+1 - N*(i==N);
     jm = j-1 + N*(j==1);
     jp = j+1 - N*(j==N);
     V = h(i,j) + ...
-        J(im,j,1) * double(x(im,j)) + ...
-        J(i,j,1) * double(x(ip,j)) + ...
-        J(i,jm,2) * double(x(i,jm)) + ...
-        J(i,j,2) * double(x(i,jp));
-    
+    J(im,j,1) * double(x(im,j)) + ...
+    J(i,j,1) * double(x(ip,j)) + ...
+    J(i,jm,2) * double(x(i,jm)) + ...
+    J(i,j,2) * double(x(i,jp));
+
     /* conditions au bords tronquées
     V = h(i,j);
     if i>1 then
@@ -207,14 +207,17 @@ endfunction
 Couplage par le passé
 ********************/
 
-function X = ising_coupling_MH(J,h)
+function X = ising_coupling_MH(J,h,feedback)
     /*
     Simule le modèle d'Ising par couplage par le passé sur Metropolis-Hastings
     N,J,h les paramètres du modèle d'Ising
     Renvoie X de taille N x N
+    feedback : booléen pour afficher ou non l'animation du couplage
     */
     N = size(h,1);
-    fig = scf();
+    if feedback then
+        fig = scf();
+    end
 
     X = int8(ones(N,N));
     Y = -int8(ones(N,N));
@@ -249,35 +252,41 @@ function X = ising_coupling_MH(J,h)
                     Y(i,j) = s;
                 end
             end
-            //Permet d'afficher l'avancement du couplage
-            drawlater;
-            clf(fig);
-            subplot(2,2,1);
-            title("Nombre k d''update : "+string(k)+"/"+string(n));
-            subplot(2,2,2);
-            Matplot((X+Y)/2+1); title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
-            subplot(2,2,3);
-            Matplot(X+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (1,\hdots,1)$");
-            subplot(2,2,4);
-            Matplot(Y+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (-1,\hdots,-1)$");
-            drawnow;
+            if feedback then //Permet d'afficher l'avancement du couplage
+                drawlater;
+                clf(fig);
+                subplot(2,2,1);
+                title("Nombre k d''update : "+string(k)+"/"+string(n));
+                subplot(2,2,2);
+                Matplot((X+Y)/2+1); title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
+                subplot(2,2,3);
+                Matplot(X+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (1,\hdots,1)$");
+                subplot(2,2,4);
+                Matplot(Y+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (-1,\hdots,-1)$");
+                drawnow;
+            end
         end
         n_old = n;
         n = 2*n; //augmenter le nombre d'update nécessaires
     end
 
-    close(fig);
-    printf("\tTemps de coalition pour CFTP via MH : "+string(n/2)+"\n");
+    if feedback then
+        close(fig);
+        printf("\tTemps de coalition pour CFTP via MH : "+string(n/2)+"\n");
+    end
 endfunction
 
-function X = ising_coupling_gibbs(J,h)
+function X = ising_coupling_gibbs(J,h,feedback)
     /*
     Simule le modèle d'Ising par couplage par le passé sur l'échantillonneur de Gibbs
     N,J,h les paramètres du modèle d'Ising
     Renvoie X de taille N x N
+    feedback : booléen pour afficher ou non l'animation du couplage
     */
     N = size(h,1);
-    fig = scf();
+    if feedback then
+        fig = scf();
+    end
 
     X = int8(ones(N,N));
     Y = -int8(ones(N,N));
@@ -291,36 +300,39 @@ function X = ising_coupling_gibbs(J,h)
         temp(:,:,1:n-n_old) = grand(N,N,n-n_old,"def"); //tirages manquant
         temp(:,:,(n-n_old+1):n) = U; //anciens tirages
         U = temp;
-        
+
         X = int8(ones(N,N));
         Y = -int8(ones(N,N));
         for k=1:n
-          //balayage séquentiel
+            //balayage séquentiel
             for i = 1:N
                 for j = 1:N
                     X = ising_gibbs_step(J,h,X,i,j,U(i,j,k));
                     Y = ising_gibbs_step(J,h,Y,i,j,U(i,j,k));
                 end
             end
-            //Permet d'afficher l'avancement du couplage
-            drawlater;
-            clf(fig);
-            subplot(2,2,1);
-            title("Nombre k d''update : "+string(k)+"/"+string(n));
-            subplot(2,2,2);
-            Matplot((X+Y)/2+1); title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
-            subplot(2,2,3);
-            Matplot(X+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (1,\hdots,1)$");
-            subplot(2,2,4);
-            Matplot(Y+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (-1,\hdots,-1)$");
-            drawnow;
+            if feedback then //Permet d'afficher l'avancement du couplage
+                drawlater;
+                clf(fig);
+                subplot(2,2,1);
+                title("Nombre k d''update : "+string(k)+"/"+string(n));
+                subplot(2,2,2);
+                Matplot((X+Y)/2+1); title("Nombre de spins différents : "+string(sum(double(abs(X-Y))/2)));
+                subplot(2,2,3);
+                Matplot(X+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (1,\hdots,1)$");
+                subplot(2,2,4);
+                Matplot(Y+1); title("$\huge f_{\theta_{"+string(n-k+1)+"}} \circ \hdots \circ f_{\theta_{"+string(n)+"}} (-1,\hdots,-1)$");
+                drawnow;
+            end
         end
         n_old = n;
         n = 2*n; //augmenter le nombre d'update nécessaires
     end
 
-    close(fig);
-    printf("\tTemps de coalition pour CFTP via Gibbs : "+string(n/2)+"\n");
+    if feedback then
+        close(fig);
+        printf("\tTemps de coalition pour CFTP via Gibbs : "+string(n/2)+"\n");
+    end
 endfunction
 
 
@@ -366,10 +378,10 @@ function y = pi(J,h,x)
     N = size(h,1);
 
     //intercation entre les voisins de même ordonnée
-//    s1 = sum(J(1:N-1,:,1).*x(1:N-1,:).*x(2:N,:)); //conditions au bords tronquées
+    //    s1 = sum(J(1:N-1,:,1).*x(1:N-1,:).*x(2:N,:)); //conditions au bords tronquées
     s1 = sum(J(:,:,1).*double(x.*x([2:N 1],:))); //conditions au bords périodiques
     //intercation entre les voisins de même abscisse
-//    s2 = sum(J(:,1:N-1,2).*x(:,1:N-1).*x(:,2:N)); //conditions au bords tronquées
+    //    s2 = sum(J(:,1:N-1,2).*x(:,1:N-1).*x(:,2:N)); //conditions au bords tronquées
     s2 = sum(J(:,:,2).*double(x.*x(:,[2:N 1]))); //conditions au bords périodiques
     //champ magnétique extérieur
     s3 = sum(h.*x);

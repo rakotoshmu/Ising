@@ -26,12 +26,12 @@ t3 = toc();
 printf("Metropolis-Hastings : "+string(t3)+"s\n");
 
 tic();
-X4 = ising_coupling_MH(J,h);
+X4 = ising_coupling_MH(J,h,%t);
 t4 = toc();
 printf("Coupling Metropolis-Hastings : "+string(t4)+"s\n");
 
 tic();
-X5 = ising_coupling_gibbs(J,h);
+X5 = ising_coupling_gibbs(J,h,%t);
 t5 = toc();
 printf("Coupling Metropolis-Hastings : "+string(t5)+"s\n");
 

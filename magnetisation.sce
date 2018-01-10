@@ -50,3 +50,13 @@ end
 subplot(2,2,3);
 plot(1:n+1,cumsum(m) ./ (1:(n+1)),[1 n+1],[0 0]);
 title("Ergodicité pour Metropolis-Hastings");
+
+//Test pour coupling from the past
+n = n0/10;
+m = zeros(1,n+1);
+for k = 1:n+1
+    m(k) = mean(double(ising_coupling_MH(J,h,%f)));
+end
+subplot(2,2,4);
+plot(1:n+1,cumsum(m) ./ (1:(n+1)),[1 n+1],[0 0]);
+title("Ergodicité pour Coupling From The Past par Metropolis-Hastings");
