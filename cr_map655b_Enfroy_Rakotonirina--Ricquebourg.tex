@@ -24,15 +24,15 @@
 
 \section{Introduction}
 
-Ce document rend compte des expériences sur les modèles d'Ising sur un réseau carré, avec pour objectifs principaux d'observer la transition de phase à la température critique, en fonction de la taille du réseau.
+Ce document rend compte d'expériences sur les modèles d'Ising sur un réseau carré, avec pour objectifs principaux d'observer la transition de phase à la température critique, en fonction de la taille du réseau. En théorie, à température sur-critique, les états les plus probables ont des spins assez mélangés, alors qu'à température sous-crituque, les états les plus probables rassemblent entre eux les spins identiques.
 
 Nous avons fait le choix, pour s'approcher le mieux possible d'un réseau infini, de prendre des conditions aux bords périodiques (par exemple, les points du côté droit du carré sont voisins du côté gauche).
 
-Pour l'observation de la température critique (réseau de grande taille), nous avons implémenté l'algorithme de Metropolis-Hastings (proposition du mouvement détaillé en section \ref{sec:MH}), l'échantilloneur de Gibbs (section \ref{sec:gibbs}) et deux méthodes de couplage par le passé, chacune basée sur une des méthodes précédentes (section \ref{sec:coupling}).
+Pour l'observation de la température critique (réseau de grande taille), nous avons implémenté l'algorithme de Metropolis-Hastings (proposition du mouvement détaillé en section \ref{sec:MH}), l'échantilloneur de Gibbs (section \ref{sec:gibbs}) et deux méthodes de couplage par le passé, chacune basée sur une des méthodes précédentes (section \ref{sec:coupling}). La section \ref{sec:check} présente la magnétisation et le test qui en découle pour vérifier que ces algorithmes fonctionnent.
 
 En très petite taille (4 ou 9 sommets sur le graphe), nous avons aussi implémenté la méthode naïve (section \ref{sec:naive}) pour observer à quel point les états $\pm(1,\hdots,1)$ étaient probable (et donc "résistants" aux transitions de Metropolis-Hastings).
 
-Enfin, la section \ref{sec:check} présente la magnétisation et le test qui en découle pour vérifier que les algorithmes fonctionnent.
+Enfin, la section \ref{sec:tc} présente les observations des transitions de phase autour de la température critique théorique, pour différentes tailles de réseau.
 
 \section{Choix d'implémentation}\label{sec:implementation}
 
@@ -57,11 +57,11 @@ Avec ce noyau instrumental, on peut réduire les calculs effectués : si $x$ est
 	\item soit $y \neq x$, auquel cas ils ne diffèrent que d'au plus une coordonnée (celle tirée uniformément). Si on note $u$ cette coordonnée et $s$ la nouvelle valeur, alors $s = y_u = - x_u$ et, en considérant que $T$ a été pris en compte dans $J$ et $h$,
 	\begin{align*}
 	\frac{\pi(y)}{\pi(x)}
-	&= \frac{\exp \left( \somme{v \sim u}{} J_{u,v} s x_{v} + h_{u} s \right)}{\exp \left( \somme{v \sim u}{} J_{u,v} (-s) x_{v} + h_{u} (-s) \right)}\\
+	&= \frac{\exp \left(\left( \somme{v \sim u}{} J_{u,v} s x_{v} + h_{u} s \right) /T \right)}{\exp \left(\left( \somme{v \sim u}{} J_{u,v} (-s) x_{v} + h_{u} (-s) \right) /T \right)}\\
 	&= \frac{e^{s V_u(x)}}{e^{-s V_u(x)}}\\
 	&= e^{2 s V_u(x)}
 	\end{align*}
-	où on a noté $V_u(x) \doteq \somme{v \sim u}{} J_{u,v} x_v + h_u$.
+	où on a noté $V_u(x) \doteq \left( \somme{v \sim u}{} J_{u,v} x_v + h_u \right) /T$.
 \end{itemize}
 
 \section{Simulation par l'échantilloneur de Gibbs}\label{sec:gibbs}
@@ -72,7 +72,14 @@ En reprenant les notations du cours, on a pour $u \in C$ et $x \in \set{\pm 1}^C
 &= \frac{\pi(x_u,x^u)}{\pi(1,x^u) + \pi(-1,x^u)}\\
 &= \frac{e^{x_u V_u(x)}}{e^{V_u(x)} + e^{-V_u(x)}}
 \end{align*}
-où on note encore $V_u(x) \doteq \somme{v \sim u}{} J_{u,v} x_v + h_u$. Donc $\pi_u(\cdot \mid x^u) = \mathcal B(\frac{e^{V_u(x)}}{e^{V_u(x)} + e^{-V_u(x)}}) = B(\frac{1}{1 + e^{-2V_u(x)}})$
+où on note encore $V_u(x) \doteq \left( \somme{v \sim u}{} J_{u,v} x_v + h_u \right) /T$. Donc $\pi_u(\cdot \mid x^u) = \mathcal B(\frac{e^{V_u(x)}}{e^{V_u(x)} + e^{-V_u(x)}}) = B(\frac{1}{1 + e^{-2V_u(x)}})$.
+
+Nous avons implémenté ici les deux versions de l'échantillonneur de Gibbs :
+\begin{itemize}
+	\item Le balayage séquentiel : à chaque itération de l'algorithme, on modifie dans un ordre fixé tous les sommets du graphe un par un (en leur faisant suivre la loi $B(\frac{1}{1 + e^{-2V_u(x)}})$)
+	\item Le balayage aléatoire : à chaque itération de l'algorithme, on ne modifie qu'un sommet, choisi uniformément sur tout le réseau.
+\end{itemize}
+Pour obtenir des temps d'exécutions similaires, et pour équilibrer les vitesses à laquelle les algorithmes convergent, pour chaque itération de l'échantillonneur de Gibbs à balayage séquentiel, on effectue $N^2$ itérations de celui aléatoire et de Metropolis-Hastings.
 
 \section{Couplage par le passé}\label{sec:coupling}
 
@@ -83,25 +90,23 @@ Pour le couplage par le passé, deux fonctions d'actualisation sont possibles.
 \end{itemize}
 Dans les deux cas, la méthode n'a de garantie théorique que si $J$ est constant et $h$ nul. On supposera donc cela vérifié.
 
-L'algorithme consiste à répéter les algorithmes vers le futur jusqu'à un temps donné et, si il n'y a pas eu coalition, ajouter des nouvelles actualisations au début du processus, ce qui demande de recommencer du début. Pour gagner du temps, plutôt que d'ajouter une actualisation à chaque fois, on double le nombre d'actualisations.
+L'algorithme consiste à répéter les algorithmes (Metropolis Hastings ou échantilloneur de Gibbs), vers le futur, en partant des états $\pm(1,\hdots,1)$  jusqu'à un temps fixé à l'avance. Si il n'y a pas eu coalition, on ajoute des nouvelles actualisations au début du processus (en conservant les actualisations précédentes à la fin du processus), ce qui demande de recalculer le processus dans son entièreté. Pour obtenir le temps de coalition exact, il faudrait en théorie n'ajouter qu'une actualisation à la fois. Cependant, on ne cherche pas à obtenir ce temps, on se contente donc de doubler le nombre d'actualisations à chaque échec de coalition.
 
-Pour les deux méthodes (Metropolis-Hastings et échantillonneur de Gibbs), les choses se passent bien au-delà de la température critique. Cependant, en dessous de la température critique, les états $\pm(1,\hdots,1)$ ont tendance à rester inchangés par les fonctions d'actualisation précédentes : dans les deux cas, la probabilité de réussir à changer un point $x_u$ égaux à ses quatre voisins est très faible : si $J>0$ (toujours supposé constant), alors $\exp(-8 J/T)$.
+Pour les deux méthodes (Metropolis-Hastings et échantillonneur de Gibbs), les choses se passent bien au-delà de la température critique. Cependant, à (très) basse température, les états $\pm(1,\hdots,1)$ sont très probables et ont donc tendance à rester inchangés par les fonctions d'actualisation précédentes : dans les deux cas, la probabilité de réussir à changer un point $x_u$ égaux à ses quatre voisins est très faible : si $J>0$ (toujours supposé constant), alors elle vaut $\exp(-8 J/T)$.
 
-En conséquence, l'algorithme met extrêmement longtemps à terminer (nous n'avons pas vu terminer, SciLab se fermait avant). En observant l'évolution des chaînes de Markov (parties de $(1,\hdots,1)$ et de $(-1,\hdots,-1)$), on voit que souvent les deux chaînes reviennent à leur état initial, ce qui signifie que l'algorithme pourrait bien continuer de boucler ainsi très longtemps.
+En conséquence, l'algorithme met extrêmement longtemps à terminer (nous n'avons pas vu terminer, SciLab se fermait avant) quand la température est trop basse (par rapport à la température critique). En observant l'évolution des chaînes de Markov parties de $(1,\hdots,1)$ et de $(-1,\hdots,-1)$, on voit que souvent les deux chaînes reviennent à leur état initial, ce qui signifie que l'algorithme pourrait bien continuer de boucler ainsi très longtemps.
 
-\section{Simulation naïve en petite taille}\label{sec:naive}
+Pour cette raison, on préfèrera à cet algorithme les algorithmes précédant, non exacts mais pour lequels on peut décider à l'avance du temps utilisé par l'algorithme.
 
-En petite taille, on peut faire une simulation naïve. Pour cela, on numérote les $2^{N^2}$ états (dans l'ordre lexicographique en lisant les matrices colonne par colonne), on calcule exactement la loi et on choisit un numéro en utilisant cette loi et une loi uniforme sur $[0,1]$.
-
-On a donc une représentation (dans un vecteur \texttt{p} dans le code SciLab) de toutes les probabilités de tous les états, et des fonctions (\texttt{etat2num} et \texttt{num2etat}) qui associent une matrice $x \in \set{\pm 1}^C$ à sa numérotation $m \in \llbracket 1,2^{N^2} \rrbracket$ ou une numérotation à sa matrice.
-
-Le calcul des probabilités exactes permet de tracer, en fonction de $T$, la probabilité d'un état donné. La figure \ref{fig:tc_naive_N4} trace la probabilité de l'état $(1,\hdots,1)$ (qui est celle de $(-1,\hdots,-1)$).
-\begin{figure}[H]
-	\label{fig:tc_naive_N4}
-	\includegraphics[width=0.8\textwidth]{temperature_critique_naive_N4.png}
-	\caption{$\pi(1,\hdots,1)$ en fonction de $T$ pour $N = 4$}
+On vérifie quand même que les comportements des différents algorithmes sont similaires au cas sans couplage figure \ref{fig:compar}
+\begin{figure}[!htbp]
+	\label{fig:compar}
+	\includegraphics[width=0.8\textwidth]{comparaison_N20_n50_T3.png}
+	\includegraphics[width=0.8\textwidth]{comparaison_N20_n50_T5.png}
+	\includegraphics[width=0.8\textwidth]{comparaison_N50_n50_T5.png}
+	\caption{Comparaison visuelle de résultats des quatre algorithmes}
 \end{figure}
-On observe une décroissance assez lente autour de la température critique théorique $T_c \simeq 2.269$. La théorie dit que quand $N \rightarrow +\infty$, cette décroissance devient de plus en plus forte et de plus en plus concentrée autour de $T_c$. En effet, les spins différents ont plus de chance de coexister en haute température, les états avec un spin majoritaire sont donc moins probables.
+Les résultats des algorithmes sont censés être similaires, mais les deux algorithmes de Metropolis-Hastings (avec et sans couplage) semblent donner des résultats qui correspondraient à des températures plus élevées (beaucoup de spin isolés, peu de blocs de même spin).
 
 \section{Vérification des algorithmes}\label{sec:check}
 
@@ -113,11 +118,83 @@ Pour l'algorithme exact (couplage par le passé), on simule de manière indépen
 $$\frac{1}{n} \sum_i M(X^{(i)}) \xrightarrow[n \rightarrow +\infty]{} 0.$$
 
 On obtient les résultats de la figure \ref{fig:ergodic}.
-\begin{figure}[H]
+\begin{figure}[!htbp]
 	\label{fig:ergodic}
 	\includegraphics[width=0.8\textwidth]{ergodicite_magnetisation.png}
 	\caption{Vérification de l'ergodicité et de la loi des grands nombres sur la magnétisation}
 \end{figure}
+
+\section{Cas en petite taille : simulation naïve et température critique}\label{sec:naive}
+
+En petite taille, on peut faire une simulation naïve. Pour cela, on numérote les $2^{N^2}$ états (dans l'ordre lexicographique en lisant les matrices colonne par colonne), on calcule exactement la loi et on choisit un numéro en utilisant cette loi et une loi uniforme sur $[0,1]$.
+
+On a donc une représentation (dans un vecteur \texttt{p} dans le code SciLab) de toutes les probabilités de tous les états, et des fonctions (\texttt{etat2num} et \texttt{num2etat}) qui associent une matrice $x \in \set{\pm 1}^C$ à sa numérotation $m \in \llbracket 1,2^{N^2} \rrbracket$ ou une numérotation à sa matrice.
+
+Le calcul des probabilités exactes permet de tracer, en fonction de $T$, la probabilité d'un état donné. La figure \ref{fig:tc_naive_N4} trace la probabilité de l'état $(1,\hdots,1)$ (qui est celle de $(-1,\hdots,-1)$).
+\begin{figure}[!htbp]
+	\label{fig:tc_naive_N4}
+	\includegraphics[width=0.8\textwidth]{temperature_critique_naive_N4.png}
+	\caption{$\pi(1,\hdots,1)$ en fonction de $T$ pour $N = 4$}
+\end{figure}
+On observe une décroissance assez lente autour d'une température critique inférieure à la température critique théorique $T_c \simeq 2.269$. La théorie dit que quand $N \rightarrow +\infty$, cette décroissance devient de plus en plus forte et de plus en plus concentrée autour de $T_c$. En effet, les spins différents ont plus de chance de coexister en haute température, les états avec un spin majoritaire sont donc moins probables.
+
+\section{Observation de la transition de phase selon la taille du réseau}\label{sec:tc}
+
+Comme dit en section \ref{sec:naive}, en très petite taille, la température critique est en dessous de la température critique théorique. On s'attend donc qu'avec l'augmentation de la taille du réseau, la température critique augmente en tendant vers la température critique théorique.
+
+Un inconvénient pour observer cela est qu'en petite taille, il peut être difficile de distingué une température sous-critique et une sur-critique, sauf quand elles sont loin de la température critique, en témoigne la figure \ref{fig:tc_gibbs_N20_n25}.
+\begin{figure}[!htbp]
+	\label{fig:tc_gibbs_N20_n25}
+	\includegraphics[width=0.8\textwidth]{temperature_critique_gibbs_N20_n25.png}
+	\caption{Simulation par échantillonneur de Gibbs ($n = 25$ balayages séquentiels), $N = 20$}
+\end{figure}
+On y voit une différence claire de comportement entre $T = 2.1$ (où les spins sont peu mélangés) et les températures supérieures, mais les motifs observés sont trop petits pour distinguer des différences entre les autres configurations. La température critique effective semble alors se situer entre $2.1$ et $2.2$.
+
+En augmentant la taille du réseau (figure \ref{fig:tc_gibbs_N50_n25}), on distingue mieux les comportements différents.
+\begin{figure}[!htbp]
+	\label{fig:tc_gibbs_N50_n25}
+	\includegraphics[width=0.8\textwidth]{temperature_critique_gibbs_N50_n25.png}
+	\caption{Simulation par échantillonneur de Gibbs ($n = 25$ balayages séquentiels), $N = 50$}
+\end{figure}
+\begin{itemize}
+	\item À $T = 2.1$, on distingue très clairement deux blocs de spins (les conditions aux bords étant périodiques, le bloc de droite composé de $-1$ (noir) est en contact avec le bord noir de gauche, tout comme les côtés noir haut et bas coïncident). La température est donc trop basse pour que les spins différents se mélangent, au point où les états probablent rassemblent les spins identiques en un unique bloc.
+	\item À $T = 2.2$, il n'y a toujours que deux blocs mais le comportement est plus proche de celui observé en figure \ref{fig:tc_gibbs_N20_n25} : ces blocs ne sont pas aussi nettement délimités qu'à $T = 2.1$ et sont intriqués l'un dans l'autre.
+	\item À $T \geq 2.3$, il commence à y avoir un mélange des différents spins, même si localement les spins identiques sont rassemblés en blocs. On observe ainsi de nombreux blocs, ainsi que des spins isolés, et il y en a d'autant plus que $T$ augmente.
+\end{itemize}
+Ces observations poussent à placer la température critique entre $2.2$ et $2.3$ mais un autre comportement est possible (figure \ref{fig:tc_gibbs_N50_n50}).
+\begin{figure}[!htbp]
+	\label{fig:tc_gibbs_N50_n50}
+	\includegraphics[width=0.8\textwidth]{temperature_critique_gibbs_N50_n50.png}
+	\caption{Simulation par échantillonneur de Gibbs ($n = 50$ balayages séquentiels), $N = 50$}
+\end{figure}
+Ici, les comportements à $T \geq 2.2$ sont assez similaires à précédemment (des blocs de spins et des spins isolés, avec des blocs d'autant plus petit et des spins isolés d'autant plus nombreux que la température est haute), mais la différence entre $T = 2.3$ et $T = 2.2$ n'est plus aussi nette. Au contraire, à $T = 2.1$ on observe un état avec très peu de spins $-1$, rassemblés en petit blocs plongés dans une majorité de spin $+1$. C'est un comportement attendu sous la température critique (une majorité d'un spin donné), on pourrait donc placer la température critique entre $2.1$ et $2.2$.
+
+En augmentant encore la taille du réseau, la transition de phase est beaucoup plus évidente, même en temps court (figure \ref{fig:tc_gibbs_N100_n25}).
+\begin{figure}[!htbp]
+	\label{fig:tc_gibbs_N100_n25}
+	\includegraphics[width=0.8\textwidth]{temperature_critique_gibbs_N100_n25.png}
+	\caption{Simulation par échantillonneur de Gibbs ($n = 25$ balayages séquentiels), $N = 100$}
+\end{figure}
+On peut ici séparer les quatre figures en deux groupes assez distincts :
+\begin{itemize}
+	\item un groupe $T \leq 2.2$, où des blocs bien délimités sont formés. La majorité des blocs formés sont de grande taille, et les spins isolés ou les blocs de petite taille sont peu nombreux et loin des frontières des blocs macroscopiques, participant à définir plus nettement les délimitations. Les blocs macroscopiques sont aussi connectés entre eux (par des "couloirs" ou des blocs microscopiques).
+	\item un groupe $T \geq 2.3$, où les blocs n'ont pas de frontières précises, et chaque bloc d'un spin donné contient de nombreux spins opposés isolés. Il y a aussi beaucoup de blocs de petites tailles qui "contaminent" les blocs de grande taille, causant ce flou sur les frontières (et donc sur la définition) des blocs macroscopiques. Les blocs macroscopiques étant plus petits et plus flous que précédemment, ils ne sont pas ou peu connectés entre eux.
+\end{itemize}
+Le comportement est identique (et d'autant plus marqué) quand on laisse l'algorithme tourner plus longtemps (figure \ref{fig:tc_gibbs_N100_n50}).
+\begin{figure}[!htbp]
+	\label{fig:tc_gibbs_N100_n50}
+	\includegraphics[width=0.8\textwidth]{temperature_critique_gibbs_N100_n50.png}
+	\caption{Simulation par échantillonneur de Gibbs ($n = 50$ balayages séquentiels), $N = 100$}
+\end{figure}
+Les figures \ref{fig:tc_gibbs_N100_n25} et \ref{fig:tc_gibbs_N100_n50} donnent donc une température critique entre $2.2$ et $2.3$, ce qui correspond bien à la température critique théorique ($\simeq 2.27$).
+
+\section{Conclusion}
+
+À $J = 1$ et $h = 0$, on dispose d'une méthode exacte (couplage par le passé par Metropolis-Hastings ou par échantillonneur de Gibbs) mais qui peut être très longue, notamment pour les températures sous-critiques et pour les réseaux de grande taille ; la durée d'exécution de cet algorithme n'est contrôlée qu'en espérance, ce qui empêche de les utiliser efficacement en pratique. En revanche, les algorithmes approchés (Metropolis-Hastings et échantillonneur de Gibbs) permettent d'observer la transition de phase et l'influence de la taille du réseau sur celle-ci : les expériences ont bien confirmé que la température critique s'observait d'autant mieux que le réseau était grand, et qu'elle tendait de manière croissante vers la température critique théorique $T_c \simeq 2.269$.
+
+
+
+
 
 \nocite{*}
 \bibliographystyle{plain}

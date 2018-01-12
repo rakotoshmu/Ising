@@ -45,16 +45,19 @@ function X = ising_MH_chain(J,h,n)
     N = size(h,1);
 
     X = int8(ones(N,N,n+1));
-    X(:,:,1) = 2*int8((grand(N,N,"def")<0.5))-1;
+    X(:,:,1) = 2*int8((grand(N,N,"def")<0.5))-1; //état initial aléatoire
     I = ceil(N*grand(2,n,"def")); //indices aléatoires
     S = 2*int8(grand(1,n,"def")<1/2)-1; //spin aléatoires
     U = grand(1,n,"def"); //uniformes sur [0,1]
     for k = 1:n
+        i = I(1,k); //indice à modifier
+        j = I(2,k); //indice à modifier
+        s = S(k); //mouvement proposé : X(i,j) = s
         X(:,:,k+1) = X(:,:,k);
-        if X(I(1,k),I(2,k),k)~=S(k) then
-            v = V_u(J,h,X(:,:,k),I(1,k),I(2,k));
-            if U(k) < exp(double(2*S(k)*v)) then
-                X(I(1,k),I(2,k),k+1) = S(k);
+        if X(i,j,k)~=s then
+            v = V_u(J,h,X(:,:,k),i,j);
+            if U(k) < exp(double(2*s*v)) then
+                X(i,j,k+1) = s;
             end
         end
     end
@@ -66,18 +69,17 @@ function X = ising_MH(J,h,n)
     */
     N = size(h,1);
 
-    X = 2*int8((grand(N,N,"def")<0.5))-1;
+    X = 2*int8((grand(N,N,"def")<0.5))-1; //état initial aléatoire
     I = ceil(N*grand(2,n,"def")); //indices aléatoires
     S = 2*int8(grand(1,n,"def")<1/2)-1; //spin aléatoires
     U = grand(1,n,"def"); //uniformes sur [0,1]
     for k = 1:n
-        i = I(1,k);
-        j = I(2,k);
-        s = S(k);
-        u = U(k);
+        i = I(1,k); //indice à modifier
+        j = I(2,k); //indice à modifier
+        s = S(k); //mouvement proposé : X(i,j) = s
         if X(i,j)~=s then
             v = V_u(J,h,X,i,j);
-            if u < exp(double(2*s*v)) then
+            if U(k) < exp(double(2*s*v)) then
                 X(i,j) = s;
             end
         end
@@ -119,7 +121,7 @@ function X = ising_gibbs_seq_chain(J,h,n)
     N = size(h,1);
 
     X = int8(ones(N,N,n+1));
-    X(:,:,1) = 2*int8((grand(N,N,"def")<0.5))-1;
+    X(:,:,1) = 2*int8((grand(N,N,"def")<0.5))-1; //état initial aléatoire
     for k = 1:n
         Xtemp = X(:,:,k);
         U = grand(N,N,"def");
@@ -139,7 +141,7 @@ function X = ising_gibbs_seq(J,h,n)
     */
     N = size(h,1);
 
-    X = 2*int8((grand(N,N,"def")<0.5))-1;
+    X = 2*int8((grand(N,N,"def")<0.5))-1; //état initial aléatoire
     for k = 1:n
         U = grand(N,N,"def");
         //balayage séquentiel
@@ -211,6 +213,7 @@ function X = ising_coupling_MH(J,h,feedback)
     n_old = 0;
     n = N^2; //nombre d'update à faire
     while max(abs(X-Y))>0 do
+        printf("\tNouvel essai de coalition, n = "+string(n)+"\n");
         //tirer les aléas manquant pour avoir n updates
         //les aléas sont rangés dans le sens inverse du temps : u_n, ..., u_2, u_1
         I = [ceil(N*grand(2,n-n_old,"def")), I]; //indices aléatoires
@@ -279,6 +282,7 @@ function X = ising_coupling_gibbs(J,h,feedback)
     n_old = 0;
     n = 1; //nombre d'update à faire
     while max(abs(X-Y))>0 do
+        printf("\tNouvel essai de coalition, n = "+string(n)+"\n");
         //tirer les aléas manquant pour avoir n updates
         //les aléas sont rangés dans le sens inverse du temps : u_n, ..., u_2, u_1
         temp = zeros(N,N,n); //resize_matrix(U,[N,N,n]);
