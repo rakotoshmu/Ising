@@ -1,9 +1,6 @@
-//rand("seed",75); //seed fixée
-
 /*
 Température critique :
-    1 < T_c < 1.01 pour conditions au bord tronquées
-    T_c théorique ~ 2.269 pour conditions au bord périodiques
+T_c théorique ~ 2.269
 */
 N = 10;
 J = ones(N,N,2);

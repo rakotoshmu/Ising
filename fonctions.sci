@@ -32,22 +32,6 @@ function V = V_u(J,h,x,i,j)
     J(i,j,1) * double(x(ip,j)) + ...
     J(i,jm,2) * double(x(i,jm)) + ...
     J(i,j,2) * double(x(i,jp));
-
-    /* conditions au bords tronquées
-    V = h(i,j);
-    if i>1 then
-        V = V + J(i-1,j,1) * x(i-1,j);
-    end
-    if i<N then
-        V = V + J(i,j,1) * x(i+1,j);
-    end
-    if j>1 then
-        V = V + J(i,j-1,2) * x(i,j-1);
-    end
-    if j<N then
-        V = V + J(i,j,2) * x(i,j+1);
-    end
-    */
 endfunction
 
 function X = ising_MH_chain(J,h,n)
@@ -280,6 +264,7 @@ function X = ising_coupling_gibbs(J,h,feedback)
     /*
     Simule le modèle d'Ising par couplage par le passé sur l'échantillonneur de Gibbs
     N,J,h les paramètres du modèle d'Ising
+    J supposé constant, h supposé nul
     Renvoie X de taille N x N
     feedback : booléen pour afficher ou non l'animation du couplage
     */
@@ -378,10 +363,8 @@ function y = pi(J,h,x)
     N = size(h,1);
 
     //intercation entre les voisins de même ordonnée
-    //    s1 = sum(J(1:N-1,:,1).*x(1:N-1,:).*x(2:N,:)); //conditions au bords tronquées
     s1 = sum(J(:,:,1).*double(x.*x([2:N 1],:))); //conditions au bords périodiques
     //intercation entre les voisins de même abscisse
-    //    s2 = sum(J(:,1:N-1,2).*x(:,1:N-1).*x(:,2:N)); //conditions au bords tronquées
     s2 = sum(J(:,:,2).*double(x.*x(:,[2:N 1]))); //conditions au bords périodiques
     //champ magnétique extérieur
     s3 = sum(h.*x);
@@ -417,8 +400,33 @@ function X = ising_exact(J,h,n)
     p = ising_law(J,h);
     c = cumsum(p);
     for k = 1:n
-        //m suit la loi p
-        [t,m] = max(1*(grand(1,1,"def")*c(d)<c));
+        //m suit la loi p/sum(p)
+        [t,m] = max((grand(1,1,"def")*c(d)<c));
         X(:,:,k) = num2etat(N,m);
+    end
+endfunction
+
+function y = log_pi_std(x)
+    /*
+    Renvoie log(pi(J,h,x)) avec J = ones(N,N,2) et h = zeros(N,N)
+    */
+    N = size(x,1);
+
+    y = sum(double(x.*x([2:N 1],:)+x.*x(:,[2:N 1])));
+endfunction
+
+function U = ising_energy_std(N)
+    /*
+    Renvoie l'énergie du modèle d'Ising
+    Si p est le résultat de ising_law(J,h) avec J = ones(N,N,2) et h = zeros(N,N),
+    alors U = -log(p)
+    */
+    N = size(h,1);
+    d = 2^(N^2); //nombre d'états
+
+    U = zeros(1,d);
+    for m = 1:d
+        x = num2etat(N,m);
+        U(m) = -log_pi_std(x);
     end
 endfunction
