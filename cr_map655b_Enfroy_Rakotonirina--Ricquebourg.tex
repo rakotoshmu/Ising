@@ -196,7 +196,7 @@ Les résultats des algorithmes sont bien similaires pour différentes températu
 
 \section{Vérification des algorithmes}\label{sec:check}
 
-Pour vérifier que les algorithmes MCMC fonctionnent, on utilise la fonction $M(x) = \frac{1}{N^2} \sum_u x_u$. $M$ est appelée la magnétisation. Dans le cas où $h = 0$, on a $\pi(-x) = \pi(x)$ et $M(-x) = -M(x)$ donc si $X \sim \pi$, alors $\mathbb E(M(X)) = 0$. Or la chaîne $(X^{(n)})_n$ (ici $(X^{(n)})_n$ représente la chaîne de Markov pour Metropilis Hastings ou gibbs) est ergodique, car c'est une chaîne de Markov à espace d'etats fini, irréductible et aperiodique. On aura donc la convergence presque sûre:
+Pour vérifier que les algorithmes MCMC fonctionnent, on utilise la fonction $M(x) = \frac{1}{N^2} \sum_u x_u$. $M$ est appelée la magnétisation. Dans le cas où $h = 0$, on a $\pi(-x) = \pi(x)$ et $M(-x) = -M(x)$ donc si $X \sim \pi$, alors $\mathbb E(M(X)) = 0$. Or la chaîne $(X^{(n)})_n$ (obtenue par Metropolis-Hastings ou échantillonneur de Gibbs) est ergodique, car c'est une chaîne de Markov à espace d'etats fini, irréductible et aperiodique, et de mesure invariante $\pi$. On aura donc la convergence presque sûre :
 $$\frac{1}{n} \sum_i M(X^{(i)}) \xrightarrow[n \rightarrow +\infty]{} \displaystyle \int_{}^{} M(x) \, \mathrm{d}\pi(x)=\mathbb E(M(X)) = 0$$
 En pratique, à basse température, les algorithmes ont tendance à rester longtemps dans les états $(1,\hdots,1)$ et $(-1,\hdots,-1)$ (qui sont très probables à basse température) donc il faudrait attendre un temps très long pour voir cette convergence. On se place donc à haute température.
 
