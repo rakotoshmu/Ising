@@ -31,7 +31,7 @@ Nous avons fait le choix, pour s'approcher le mieux possible d'un réseau infini
 
 Pour l'observation de la température critique (réseau de grande taille), nous avons implémenté l'échantilloneur de Gibbs (section \ref{sec:gibbs}), l'algorithme de Metropolis-Hastings (section \ref{sec:MH}), et deux méthodes de couplage par le passé, chacune basée sur une des méthodes précédentes (section \ref{sec:coupling}). La section \ref{sec:check} présente la magnétisation et le test qui en découle pour vérifier que ces algorithmes fonctionnent.
 
-En très petite taille (4 ou 9 sommets sur le graphe), nous avons aussi implémenté la méthode naïve (section \ref{sec:naive}) pour observer à quel point les états $\pm(1,\hdots,1)$ étaient probable (et donc "résistants" aux transitions de Metropolis-Hastings).
+En très petite taille (au plus 16 sommets sur le graphe), nous avons aussi implémenté la méthode naïve (section \ref{sec:naive}) pour observer à quel point les états $\pm(1,\hdots,1)$ étaient probable (et donc "résistants" aux transitions de Metropolis-Hastings).
 
 Enfin, la section \ref{sec:tc} présente les observations des transitions de phase autour de la température critique théorique, pour différentes tailles de réseau.
 
@@ -196,7 +196,7 @@ Les résultats des algorithmes sont bien similaires pour différentes températu
 
 \section{Vérification des algorithmes}\label{sec:check}
 
-Pour vérifier que les algorithmes MCMC fonctionnent, on utilise la fonction $M(x) = \frac{1}{N^2} \sum_u x_u$. $M$ est appelée la magnétisation. Dans le cas où $h = 0$, on a $\pi(-x) = \pi(x)$ et $M(-x) = -M(x)$ donc si $X \sim \pi$, alors $\mathbb E(M(X)) = 0$. Or la chaîne $(X^{(n)})_n$ (obtenue par Metropolis-Hastings ou échantillonneur de Gibbs) est ergodique, car c'est une chaîne de Markov à espace d'etats fini, irréductible et aperiodique, et de mesure invariante $\pi$. On aura donc la convergence presque sûre :
+Pour vérifier que les algorithmes MCMC fonctionnent, on utilise la fonction $M(x) = \frac{1}{N^2} \sum_u x_u$. $M$ est appelée la magnétisation. Dans le cas où $h = 0$, on a $\pi(-x) = \pi(x)$ et $M(-x) = -M(x)$ donc si $X \sim \pi$, alors $\mathbb E(M(X)) = 0$. Or la chaîne $(X^{(n)})_n$ (obtenue par Metropolis-Hastings ou échantillonneur de Gibbs) est ergodique, car c'est une chaîne de Markov à espace d'états fini, irréductible et aperiodique. $\pi$ étant la mesure invariante, on aura donc la convergence presque sûre :
 $$\frac{1}{n} \sum_i M(X^{(i)}) \xrightarrow[n \rightarrow +\infty]{} \displaystyle \int_{}^{} M(x) \, \mathrm{d}\pi(x)=\mathbb E(M(X)) = 0$$
 En pratique, à basse température, les algorithmes ont tendance à rester longtemps dans les états $(1,\hdots,1)$ et $(-1,\hdots,-1)$ (qui sont très probables à basse température) donc il faudrait attendre un temps très long pour voir cette convergence. On se place donc à haute température.
 
