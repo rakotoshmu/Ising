@@ -1,7 +1,7 @@
 fig_mag = scf(); clf(fig_mag);
 
 N = 5;
-n0 = 800;
+n0 = 1600;
 T = 50;
 J = ones(N,N,2)/T;
 h = zeros(N,N)/T;

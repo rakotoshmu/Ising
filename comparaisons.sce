@@ -2,13 +2,13 @@
 Comparaison entre les algorithmes
 ********************************/
 
-N = 20; //taille du réseau
+N = 50; //taille du réseau
 T = 3; //température sur-critique pour que les algorithmes de couplage terminent
 J = ones(N,N,2)/T;
 h = zeros(N,N)/T;
 
 //nombres de balayages
-n1 = 50;
+n1 = 100;
 n2 = n1 * N^2;
 n3 = n2;
 

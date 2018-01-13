@@ -213,7 +213,7 @@ function X = ising_coupling_MH(J,h,feedback)
     n_old = 0;
     n = N^2; //nombre d'update à faire
     while max(abs(X-Y))>0 do
-        printf("\tNouvel essai de coalition, n = "+string(n)+"\n");
+        printf("\tEssai de coalition, n = "+string(n)+"\n");
         //tirer les aléas manquant pour avoir n updates
         //les aléas sont rangés dans le sens inverse du temps : u_n, ..., u_2, u_1
         I = [ceil(N*grand(2,n-n_old,"def")), I]; //indices aléatoires
@@ -255,6 +255,7 @@ function X = ising_coupling_MH(J,h,feedback)
         end
         n_old = n;
         n = 2*n; //augmenter le nombre d'update nécessaires
+        printf("\t\t"+string(sum(double(abs(X-Y))/2))+" spins différents\n");
     end
 
     if feedback then
@@ -316,11 +317,12 @@ function X = ising_coupling_gibbs(J,h,feedback)
         end
         n_old = n;
         n = 2*n; //augmenter le nombre d'update nécessaires
+        printf("\t"+string(sum(double(abs(X-Y))/2))+" spins différents\n");
     end
 
     if feedback then
         close(fig);
-        printf("\tTemps de coalition pour CFTP via Gibbs : "+string(n/2)+"\n");
+        printf("\t\tTemps de coalition pour CFTP via Gibbs : "+string(n/2)+"\n");
     end
 endfunction
 
