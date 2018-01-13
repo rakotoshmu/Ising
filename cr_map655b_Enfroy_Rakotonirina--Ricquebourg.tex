@@ -120,7 +120,7 @@ $\inf\{n,f_{\theta_1}...f_{\theta_n}(1,...,1)=f_{\theta_1}...f_{\theta_n}(-1,...
 Donc il suffit de simuler pour $(1,...,1)$ et $(-1,...,-1)$.
 \vskip 0,5cmMontrons la croissance des fonctions d'actualisations dans le cas Metropolis Hastings (avec $J\geq0$):
 \\Soit $x,y \in  \{ \pm 1 \} ^{N^2}$ avec $x \succcurlyeq y$
-\\On tire $i,j \in \{1,..N\}$ $s \in \{\pm 1\}$ et $u\in [0,1]$ uniformément. \\(donc $\theta = \{ i,j,s,u \}$)
+\\On tire $i,j \in \{1,..N\}$ $s \in \{\pm 1\}$ et $u\in [0,1]$ uniformément. \\(donc $\theta = ( i,j,s,u )$)
 \\Alors on a $V_{i,j}(x) \geq V_{i,j}(y)$ (avec les notations de la section 4) 
 \\Si $s=1$ alors $exp(2V_{i,j}(x)) \geq exp(2V_{i,j}(y))$ donc si on mets un $1$ en position $i,j$ de $y$, (ie $exp(2V_{i,j}(y))>u$) alors il en est de même pour $x$ (ie $exp(2V_{i,j}(x))>u$).
 \\Donc $f_{\theta}(x) \succcurlyeq f_{\theta}(y)$.
