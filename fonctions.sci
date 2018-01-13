@@ -56,7 +56,7 @@ function X = ising_MH_chain(J,h,n)
         X(:,:,k+1) = X(:,:,k);
         if X(i,j,k)~=s then
             v = V_u(J,h,X(:,:,k),i,j);
-            if U(k) < exp(double(2*s*v)) then
+            if U(k) < exp(double(2*s)*v) then
                 X(i,j,k+1) = s;
             end
         end
@@ -79,7 +79,7 @@ function X = ising_MH(J,h,n)
         s = S(k); //mouvement proposé : X(i,j) = s
         if X(i,j)~=s then
             v = V_u(J,h,X,i,j);
-            if U(k) < exp(double(2*s*v)) then
+            if U(k) < exp(double(2*s)*v) then
                 X(i,j) = s;
             end
         end
@@ -105,7 +105,7 @@ function Y = ising_gibbs_step(J,h,X,i,j,u)
     */
     N = size(h,1);
 
-    p = 1/(1+exp(double(-2*V_u(J,h,X,i,j))));
+    p = 1/(1+exp(-2*V_u(J,h,X,i,j)));
 
     Y = X;
     Y(i,j) = 2*int8(u<p)-1;
@@ -229,13 +229,13 @@ function X = ising_coupling_MH(J,h,feedback)
             u=U(k);
             if X(i,j)~=s then
                 v = V_u(J,h,X,i,j);
-                if u < exp(double(2*s*v)) then
+                if u < exp(double(2*s)*v) then
                     X(i,j) = s;
                 end
             end
             if Y(i,j)~=s then
                 v = V_u(J,h,Y,i,j);
-                if u < exp(double(2*s*v)) then
+                if u < exp(double(2*s)*v) then
                     Y(i,j) = s;
                 end
             end
