@@ -102,6 +102,33 @@ L'algorithme consiste à répéter les algorithmes (Metropolis Hastings ou écha
 Pour les deux méthodes (Metropolis-Hastings et échantillonneur de Gibbs), les choses se passent bien au-delà de la température critique. Cependant, à (très) basse température, les états $\pm(1,\hdots,1)$ sont très probables et ont donc tendance à rester inchangés par les fonctions d'actualisation précédentes : dans les deux cas, la probabilité de réussir à changer un point $x_u$ égaux à ses quatre voisins est très faible : si $J>0$ (toujours supposé constant), alors elle vaut $\exp(-8 J/T)$.
 
 En conséquence, l'algorithme met extrêmement longtemps à terminer (nous ne l'avons pas vu terminer) quand la température est trop basse (par rapport à la température critique). En observant l'évolution des chaînes de Markov démarrant de $(1,\hdots,1)$ et de $(-1,\hdots,-1)$, on voit que souvent les deux chaînes reviennent à leur état initial, ce qui signifie que l'algorithme pourrait bien continuer de boucler ainsi très longtemps. À titre d'exemple, à $T = 2.2$ (sous-critique mais proche de la température critique) et $N = 50$ (donc $2500$ entrées par matrices), on peut noter $e$ le nombre d'entrées par lequel les deux chaînes diffèrent encore après $n$ actualisation de type Metropolis-Hastings, ce qui donne les tables \ref{tab:non_coalition}. Plus généralement, quand $T$ augmente, on a besoin de moins en moins d'actualisations.
+
+
+
+\vskip 0,5cmOn peut se contenter de simuler uniquement pour les deux états $(1,...,1)$ et $(-1,...,-1)$. Pour cela on considère la relation d'ordre (partiel) suivante :
+\begin{center}
+$x \succcurlyeq y \Leftrightarrow \forall u \in \{ \pm 1 \} ^{N^2} , x_u \geq y_u$ 
+\end{center}
+Alors si on note $f_{\theta}$ la fonction d'actualisation pour l'aléa $\theta$ on a:
+\begin{center}
+$\forall \theta$ $(x \succcurlyeq y \Rightarrow f_{\theta}(x) \succcurlyeq f_{\theta}(y)) $ 
+\end{center}
+Dans ce cas on a $\forall (\theta_n)_{n\in \mathbb{N}}$:
+\begin{center}
+$\inf\{n,f_{\theta_1}...f_{\theta_n}(1,...,1)=f_{\theta_1}...f_{\theta_n}(-1,...,-1)\}=$\\$ \inf\{n,f_{\theta_1}...f_{\theta_n}(x)=f_{\theta_1}...f_{\theta_n}(y), \forall x,y \in \{ \pm 1 \} ^{N^2} \}$
+\end{center}
+Donc il suffit de simuler pour $(1,...,1)$ et $(-1,...,-1)$.
+\vskip 0,5cmMontrons la croissance des fonctions d'actualisations dans le cas Metropolis Hastings (avec $J\geq0$):
+\\Soit $x,y \in  \{ \pm 1 \} ^{N^2}$ avec $x \succcurlyeq y$
+\\On tire $i,j \in \{1,..N\}$ $s \in \{\pm 1\}$ et $u\in [0,1]$ uniformément. \\(donc $\theta = \{ i,j,s,u \}$)
+\\Alors on a $V_{i,j}(x) \geq V_{i,j}(y)$ (avec les notations de la section 4) 
+\\Si $s=1$ alors $exp(2V_{i,j}(x)) \geq exp(2V_{i,j}(y))$ donc si on mets un $1$ en position $i,j$ de $y$, (ie $exp(2V_{i,j}(y))>u$) alors il en est de même pour $x$ (ie $exp(2V_{i,j}(x))>u$).
+\\Donc $f_{\theta}(x) \succcurlyeq f_{\theta}(y)$.
+\\De même si $s=-1$.($exp(-2V_{i,j}(x)) \leq exp(-2V_{i,j}(y))$ donc si on mets un $-1$ en position $i,j$ de $x$, (ie $exp(-2V_{i,j}(x))>u$) alors il en est de même pour $y$ (ie $exp(2V_{i,j}(y))>u$).
+
+
+
+
 \begin{table}[!htbp]
 	\label{tab:non_coalition}
 	\centering
